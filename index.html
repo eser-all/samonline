@@ -74,7 +74,7 @@
         <!-- Action Buttons Section -->
         <div class="flex items-center gap-2 sm:gap-3">
             <!-- Admin Login/Status Indicator -->
-            <button id="adminLoginBtn" onclick="toggleAdminLogin()" class="bg-indigo-600/20 hover:bg-indigo-600/30 border border-indigo-500/30 text-indigo-300 text-xs font-medium px-3.5 py-2.5 rounded-xl transition flex items-center gap-2">
+            <button id="adminLoginBtn" onclick="handleAdminBtnClick()" class="bg-indigo-600/20 hover:bg-indigo-600/30 border border-indigo-500/30 text-indigo-300 text-xs font-medium px-3.5 py-2.5 rounded-xl transition flex items-center gap-2">
                 <i class="fa-solid fa-user-shield"></i>
                 <span id="adminStatusText">এডমিন লগইন</span>
             </button>
@@ -138,6 +138,42 @@
                 </table>
             </div>
         </section>
+    </div>
+
+    <!-- ADMIN LOGIN MODAL POPUP -->
+    <div id="loginModal" class="fixed inset-0 z-50 hidden bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="glass-panel w-full max-w-md rounded-2xl border border-slate-700 p-6 shadow-2xl relative">
+            <div class="flex justify-between items-center pb-4 mb-4 border-b border-slate-800">
+                <h3 class="text-base font-bold text-white flex items-center gap-2">
+                    <i class="fa-solid fa-user-shield text-indigo-400"></i>
+                    <span>এডমিন লগইন</span>
+                </h3>
+                <button onclick="closeLoginModal()" class="text-slate-400 hover:text-white p-1">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+
+            <form id="loginForm" onsubmit="handleLoginSubmit(event)" class="space-y-4">
+                <div>
+                    <label class="block text-xs text-slate-300 mb-1">এডমিন ইমেইল *</label>
+                    <input type="email" id="loginEmail" required placeholder="admin@samonline.com" class="w-full glass-input text-xs rounded-xl p-2.5">
+                </div>
+
+                <div>
+                    <label class="block text-xs text-slate-300 mb-1">পাসওয়ার্ড *</label>
+                    <input type="password" id="loginPassword" required placeholder="••••••••" class="w-full glass-input text-xs rounded-xl p-2.5">
+                </div>
+
+                <div id="loginError" class="text-xs text-rose-400 hidden bg-rose-500/10 p-2.5 rounded-xl border border-rose-500/20"></div>
+
+                <div class="flex justify-end gap-3 pt-3 border-t border-slate-800">
+                    <button type="button" onclick="closeLoginModal()" class="px-4 py-2.5 rounded-xl bg-slate-800 text-slate-300 text-xs">বাতিল</button>
+                    <button type="submit" id="loginSubmitBtn" class="px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold shadow-lg shadow-indigo-600/25">
+                        লগইন করুন
+                    </button>
+                </div>
+            </form>
+        </div>
     </div>
 
     <!-- SMART FILTER MODAL POPUP WINDOW -->
@@ -270,7 +306,6 @@
         // ==========================================
         // 1. FIREBASE INITIALIZATION
         // ==========================================
-        // আপনার Firebase Console থেকে নিচের মানগুলো বসিয়ে দিন
         const firebaseConfig = {
             apiKey: "YOUR_API_KEY",
             authDomain: "YOUR_AUTH_DOMAIN.firebaseapp.com",
@@ -295,7 +330,7 @@
         let complaints = [];
 
         // ==========================================
-        // 2. ZONE SETUP & LOGO CONFIG
+        // 2. ZONE SETUP
         // ==========================================
         const ZONES = [];
         for (let i = 1; i <= 55; i++) {
@@ -341,30 +376,47 @@
             });
         }
 
-        async function toggleAdminLogin() {
+        function handleAdminBtnClick() {
             if (currentUser) {
                 if (confirm("আপনি কি এডমিন সেশন থেকে লগআউট করতে চান?")) {
-                    await auth.signOut();
-                    alert("লগআউট সফল হয়েছে।");
+                    auth.signOut().then(() => {
+                        alert("লগআউট সফল হয়েছে।");
+                    });
                 }
             } else {
-                const email = prompt("এডমিন ইমেইল প্রদান করুন:");
-                if (!email) return;
+                openLoginModal();
+            }
+        }
 
-                if (!ADMIN_EMAILS.includes(email.toLowerCase().trim())) {
-                    alert("❌ দুঃখিত! এই ইমেইলটি এডমিন প্যানেলের জন্য অনুমোদিত নয়।");
-                    return;
-                }
+        async function handleLoginSubmit(e) {
+            e.preventDefault();
+            const email = document.getElementById('loginEmail').value.trim();
+            const password = document.getElementById('loginPassword').value.trim();
+            const errDiv = document.getElementById('loginError');
+            const btn = document.getElementById('loginSubmitBtn');
 
-                const password = prompt("এডমিন পাসওয়ার্ড দিন:");
-                if (!password) return;
+            errDiv.classList.add('hidden');
 
-                try {
-                    await auth.signInWithEmailAndPassword(email.trim(), password);
-                    alert("✅ এডমিন হিসেবে সফলভাবে লগইন করেছেন!");
-                } catch (err) {
-                    alert("❌ লগইন ব্যর্থ হয়েছে: " + err.message);
-                }
+            if (!ADMIN_EMAILS.includes(email.toLowerCase())) {
+                errDiv.innerText = "❌ এই ইমেইলটি এডমিন প্যানেলের জন্য অনুমোদিত নয়।";
+                errDiv.classList.remove('hidden');
+                return;
+            }
+
+            btn.disabled = true;
+            btn.innerText = "লগইন হচ্ছে...";
+
+            try {
+                await auth.signInWithEmailAndPassword(email, password);
+                closeLoginModal();
+                alert("✅ এডমিন হিসেবে সফলভাবে লগইন করেছেন!");
+                document.getElementById('loginForm').reset();
+            } catch (err) {
+                errDiv.innerText = "❌ লগইন ব্যর্থ: " + (err.message.includes('wrong-password') ? 'ভুল পাসওয়ার্ড দেওয়া হয়েছে।' : err.message);
+                errDiv.classList.remove('hidden');
+            } finally {
+                btn.disabled = false;
+                btn.innerText = "লগইন করুন";
             }
         }
 
@@ -415,10 +467,9 @@
         }
 
         async function deleteComplaint(docId, token) {
-            // ডিলিট সিকিউরিটি চেক
             if (!currentUser || !ADMIN_EMAILS.includes(currentUser.email.toLowerCase())) {
                 alert("🚫 পারমিশন ডিনাইড! কেবল অনুমোদিত এডমিন অ্যাকাউন্ট দিয়েই টিকিট ডিলিট করা সম্ভব।");
-                toggleAdminLogin();
+                openLoginModal();
                 return;
             }
 
@@ -512,7 +563,12 @@
             document.getElementById('statHold').innerText = complaints.filter(c => c.status === 'Hold' || c.status === 'Cancelled').length;
         }
 
-        /* Modal Visibility Controls */
+        /* Modal Controls */
+        function openLoginModal() { document.getElementById('loginModal').classList.remove('hidden'); }
+        function closeLoginModal() { 
+            document.getElementById('loginModal').classList.add('hidden'); 
+            document.getElementById('loginError').classList.add('hidden');
+        }
         function openComplaintModal() { document.getElementById('complaintModal').classList.remove('hidden'); }
         function closeComplaintModal() { document.getElementById('complaintModal').classList.add('hidden'); }
         function openFilterModal() { document.getElementById('filterModal').classList.remove('hidden'); }
