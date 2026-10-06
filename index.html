@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="bn" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SAM ONLINE - Multi-Office ISP Dashboard (D-1 to D-55)</title>
+    
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        glass: {
+                            bg: 'rgba(15, 23, 42, 0.75)',
+                            card: 'rgba(30, 41, 59, 0.70)',
+                            border: 'rgba(255, 255, 255, 0.12)'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <!-- FontAwesome & Google Fonts -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Firebase SDK (v9 Modular Compat Scripts) -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #090d16 0%, #0f172a 50%, #1e1b4b 100%);
+            background-attachment: fixed;
+            color: #f8fafc;
+        }
+        .glass-panel {
+            background: rgba(30, 41, 59, 0.65);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .glass-input {
+            background: rgba(15, 23, 42, 0.8) !important;
+            border: 1px solid rgba(255, 255, 255, 0.15) !important;
+            color: #f8fafc !important;
+        }
+        .glass-input:focus {
+            border-color: #38bdf8 !important;
+            outline: none !important;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col antialiased">
+
+    <!-- Top Header -->
+    <header class="sticky top-0 z-40 glass-panel border-b border-slate-700/50 px-4 lg:px-8 py-3 flex justify-between items-center">
+        <div class="flex items-center gap-3">
+            <!-- Brand Logo -->
+            <div class="w-10 h-10 rounded-xl overflow-hidden bg-slate-800 flex items-center justify-center border border-slate-700 shadow-lg">
+                <img id="brandLogo" src="https://via.placeholder.com/150?text=SAM" alt="SAM ONLINE Logo" class="w-full h-full object-cover" onerror="this.src='https://cdn-icons-png.flaticon.com/512/843/843259.png'">
+            </div>
+            <div>
+                <h1 class="font-bold text-lg leading-tight bg-gradient-to-r from-sky-400 via-cyan-300 to-indigo-300 bg-clip-text text-transparent">SAM ONLINE ISP</h1>
+                <p class="text-xs text-slate-400">৫৫টি জোন অটোমেশন ও স্মার্ট টিকিটিং হাব</p>
+            </div>
+        </div>
+
+        <!-- Action Buttons Section -->
+        <div class="flex items-center gap-2 sm:gap-3">
+            <!-- Admin Login/Status Indicator -->
+            <button id="adminLoginBtn" onclick="toggleAdminLogin()" class="bg-indigo-600/20 hover:bg-indigo-600/30 border border-indigo-500/30 text-indigo-300 text-xs font-medium px-3.5 py-2.5 rounded-xl transition flex items-center gap-2">
+                <i class="fa-solid fa-user-shield"></i>
+                <span id="adminStatusText">এডমিন লগইন</span>
+            </button>
+
+            <!-- Smart Filter Modal Trigger Button -->
+            <button onclick="openFilterModal()" class="bg-slate-800 hover:bg-slate-700 border border-slate-600/80 text-slate-200 text-xs font-medium px-3.5 py-2.5 rounded-xl shadow-md flex items-center gap-2 transition active:scale-95">
+                <i class="fa-solid fa-filter text-sky-400 text-sm"></i>
+                <span class="hidden sm:inline">স্মার্ট ফিল্টার</span>
+            </button>
+
+            <!-- New Complaint Entry Modal Trigger Button -->
+            <button onclick="openComplaintModal()" class="bg-gradient-to-r from-sky-500 to-blue-600 hover:from-sky-400 hover:to-blue-500 text-white text-xs font-semibold px-4 py-2.5 rounded-xl shadow-lg shadow-sky-500/20 flex items-center gap-2 transition active:scale-95">
+                <i class="fa-solid fa-plus-circle text-sm"></i>
+                <span>নতুন কমপ্লেন এন্ট্রি</span>
+            </button>
+        </div>
+    </header>
+
+    <div class="flex-1 p-4 lg:p-6 space-y-6">
+        
+        <!-- Live KPI Counter Cards Grid -->
+        <section class="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div class="glass-panel rounded-2xl p-4 border border-slate-700/50">
+                <p class="text-xs text-slate-400">মোট কমপ্লেন (Total)</p>
+                <h3 class="text-2xl font-bold mt-1 text-white font-mono" id="statTotal">0</h3>
+            </div>
+            <div class="glass-panel rounded-2xl p-4 border border-slate-700/50">
+                <p class="text-xs text-amber-400">চলমান (Running)</p>
+                <h3 class="text-2xl font-bold mt-1 text-amber-400 font-mono" id="statRunning">0</h3>
+            </div>
+            <div class="glass-panel rounded-2xl p-4 border border-slate-700/50">
+                <p class="text-xs text-emerald-400">সম্পন্ন (Completed)</p>
+                <h3 class="text-2xl font-bold mt-1 text-emerald-400 font-mono" id="statCompleted">0</h3>
+            </div>
+            <div class="glass-panel rounded-2xl p-4 border border-slate-700/50">
+                <p class="text-xs text-rose-400">স্থগিত / বাতিল (Hold/Cancel)</p>
+                <h3 class="text-2xl font-bold mt-1 text-rose-400 font-mono" id="statHold">0</h3>
+            </div>
+        </section>
+
+        <!-- Complaints Table -->
+        <section class="glass-panel rounded-2xl p-5 border border-slate-800">
+            <div class="overflow-x-auto rounded-xl border border-slate-800">
+                <table class="w-full text-left text-xs text-slate-300">
+                    <thead class="bg-slate-900/90 text-slate-400 font-semibold uppercase text-[11px] border-b border-slate-800">
+                        <tr>
+                            <th class="p-3.5">টোকেন নং</th>
+                            <th class="p-3.5">Zone অফিস</th>
+                            <th class="p-3.5">গ্রাহক আইডি & ফোন</th>
+                            <th class="p-3.5">সমস্যার ধরন</th>
+                            <th class="p-3.5">ঠিকানা</th>
+                            <th class="p-3.5">অ্যাসাইনড টেকনিশিয়ান</th>
+                            <th class="p-3.5">স্ট্যাটাস</th>
+                            <th class="p-3.5 text-center">বট কমেন্ট & ব্যবহারিত মালামাল</th>
+                            <th class="p-3.5 text-center">অ্যাকশন</th>
+                        </tr>
+                    </thead>
+                    <tbody id="complaintTableBody" class="divide-y divide-slate-800/60 bg-slate-950/30">
+                        <!-- Dynamic Rows -->
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </div>
+
+    <!-- SMART FILTER MODAL POPUP WINDOW -->
+    <div id="filterModal" class="fixed inset-0 z-50 hidden bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="glass-panel w-full max-w-xl rounded-2xl border border-slate-700 p-6 shadow-2xl relative">
+            <div class="flex justify-between items-center pb-4 mb-4 border-b border-slate-800">
+                <h3 class="text-base font-bold text-white flex items-center gap-2">
+                    <i class="fa-solid fa-filter text-sky-400"></i>
+                    <span>স্মার্ট ফিল্টার ও ডাটা সার্চ</span>
+                </h3>
+                <button onclick="closeFilterModal()" class="text-slate-400 hover:text-white p-1">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+
+            <div class="space-y-4">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs text-slate-300 mb-1">অফিস Zone নির্বাচন</label>
+                        <select id="filterZone" onchange="filterData()" class="w-full glass-input text-xs rounded-xl p-2.5">
+                            <option value="all">🌐 সকল জোন (D-1 to D-55)</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs text-slate-300 mb-1">স্ট্যাটাস অনুযায়ী</label>
+                        <select id="filterStatus" onchange="filterData()" class="w-full glass-input text-xs rounded-xl p-2.5">
+                            <option value="all">সকল স্ট্যাটাস</option>
+                            <option value="Running">🟡 Running</option>
+                            <option value="Completed">🟢 Completed (Ok/Done)</option>
+                            <option value="Hold">⏸️ Hold</option>
+                            <option value="Cancelled">❌ Cancelled</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs text-slate-300 mb-1">স্মার্ট সার্চ (টোকেন/আইডি/ফোন/টেকনিশিয়ান)</label>
+                    <div class="relative">
+                        <input type="text" id="filterSearch" onkeyup="filterData()" placeholder="যেমন: T-241001, S-501, অন্তু, 017..." class="w-full glass-input text-xs rounded-xl pl-8 pr-3 py-2.5">
+                        <i class="fa-solid fa-search absolute left-3 top-3 text-xs text-slate-500"></i>
+                    </div>
+                </div>
+
+                <div class="flex justify-between items-center pt-3 border-t border-slate-800">
+                    <button type="button" onclick="resetFilters()" class="px-4 py-2 rounded-xl bg-rose-500/10 text-rose-400 hover:bg-rose-500/20 text-xs border border-rose-500/20 transition">
+                        ফিল্টার রিসেট
+                    </button>
+                    <button type="button" onclick="closeFilterModal()" class="px-5 py-2.5 rounded-xl bg-sky-500 hover:bg-sky-400 text-white text-xs font-semibold">
+                        প্রয়োগ করুন
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- NEW COMPLAINT MODAL WINDOW -->
+    <div id="complaintModal" class="fixed inset-0 z-50 hidden bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="glass-panel w-full max-w-2xl rounded-2xl border border-slate-700 p-6 shadow-2xl relative">
+            <div class="flex justify-between items-center pb-4 mb-4 border-b border-slate-800">
+                <h3 class="text-base font-bold text-white flex items-center gap-2">
+                    <i class="fa-solid fa-headset text-sky-400"></i>
+                    <span>নতুন ফোন কমপ্লেন এন্ট্রি ফরম</span>
+                </h3>
+                <button onclick="closeComplaintModal()" class="text-slate-400 hover:text-white p-1">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+
+            <form id="modalForm" onsubmit="handleFormSubmit(event)" class="space-y-4">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs text-slate-300 mb-1">অফিস Zone নির্বাচন করুন *</label>
+                        <select id="modalZone" required class="w-full glass-input text-xs rounded-xl p-2.5"></select>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs text-slate-300 mb-1">সমস্যার ধরন *</label>
+                        <select id="modalProblem" required class="w-full glass-input text-xs rounded-xl p-2.5">
+                            <option value="New Connection">🆕 New Connection</option>
+                            <option value="651">⚠️ 651 Error / Authentication Fault</option>
+                            <option value="Red Light/Optical Loss">🔴 Red Light / 光 Loss Fault</option>
+                            <option value="ONU Power Problem">⚡ ONU Power Issue / Adapter</option>
+                            <option value="Router Config">📶 Router Config / Password Reset</option>
+                            <option value="Cable Cut">✂️ Drop Cable Cut / Splicing</option>
+                            <option value="Slow Speed">🐢 Slow Speed Complaint</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs text-slate-300 mb-1">গ্রাহকের আইডি / নাম *</label>
+                        <input type="text" id="modalUser" required placeholder="যেমন: S-1092 / কবির হোসেন" class="w-full glass-input text-xs rounded-xl p-2.5">
+                    </div>
+
+                    <div>
+                        <label class="block text-xs text-slate-300 mb-1">মোবাইল নম্বর *</label>
+                        <input type="tel" id="modalPhone" required placeholder="017XXXXXXXX" class="w-full glass-input text-xs rounded-xl p-2.5">
+                    </div>
+
+                    <div>
+                        <label class="block text-xs text-slate-300 mb-1">দায়িত্বপ্রাপ্ত টেকনিশিয়ান *</label>
+                        <input type="text" id="modalTechnician" required placeholder="যেমন: অন্তু / জাহিদ" class="w-full glass-input text-xs rounded-xl p-2.5">
+                    </div>
+
+                    <div>
+                        <label class="block text-xs text-slate-300 mb-1">অগ্রাধিকার (Priority)</label>
+                        <select id="modalPriority" class="w-full glass-input text-xs rounded-xl p-2.5">
+                            <option value="Normal">🟢 Normal</option>
+                            <option value="Urgent">🔴 Urgent</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs text-slate-300 mb-1">গ্রাহকের ঠিকানা *</label>
+                    <input type="text" id="modalAddress" required placeholder="বাড়ি, রোড, এলাকা..." class="w-full glass-input text-xs rounded-xl p-2.5">
+                </div>
+
+                <div class="flex justify-end gap-3 pt-3 border-t border-slate-800">
+                    <button type="button" onclick="closeComplaintModal()" class="px-4 py-2.5 rounded-xl bg-slate-800 text-slate-300 text-xs">বাতিল</button>
+                    <button type="submit" class="px-5 py-2.5 rounded-xl bg-sky-500 hover:bg-sky-400 text-white text-xs font-semibold shadow-lg shadow-sky-500/25">
+                        সেভ করুন ও বটে ট্রান্সমিট করুন
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // ==========================================
+        // 1. FIREBASE INITIALIZATION
+        // ==========================================
+        // আপনার Firebase Console থেকে নিচের মানগুলো বসিয়ে দিন
+        const firebaseConfig = {
+            apiKey: "YOUR_API_KEY",
+            authDomain: "YOUR_AUTH_DOMAIN.firebaseapp.com",
+            projectId: "YOUR_PROJECT_ID",
+            storageBucket: "YOUR_STORAGE_BUCKET.appspot.com",
+            messagingSenderId: "YOUR_SENDER_ID",
+            appId: "YOUR_APP_ID"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.firestore();
+
+        // অনুমোদিত এডমিন ইমেইল তালিকা
+        const ADMIN_EMAILS = [
+            "admin@samonline.com",
+            "info@samonline.com",
+            "antu@samonline.com"
+        ];
+
+        let currentUser = null;
+        let complaints = [];
+
+        // ==========================================
+        // 2. ZONE SETUP & LOGO CONFIG
+        // ==========================================
+        const ZONES = [];
+        for (let i = 1; i <= 55; i++) {
+            ZONES.push({ id: `D-${i}`, name: `D-${i} Zone Office` });
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            populateZoneDropdowns();
+            listenToAuth();
+            listenToFirestore();
+        });
+
+        function populateZoneDropdowns() {
+            const filterSelect = document.getElementById('filterZone');
+            const modalSelect = document.getElementById('modalZone');
+
+            ZONES.forEach(z => {
+                const opt1 = document.createElement('option');
+                opt1.value = z.id;
+                opt1.textContent = z.name;
+                filterSelect.appendChild(opt1);
+
+                const opt2 = document.createElement('option');
+                opt2.value = z.id;
+                opt2.textContent = z.name;
+                modalSelect.appendChild(opt2);
+            });
+        }
+
+        // ==========================================
+        // 3. AUTHENTICATION & SECURITY
+        // ==========================================
+        function listenToAuth() {
+            auth.onAuthStateChanged(user => {
+                currentUser = user;
+                const statusBtnText = document.getElementById('adminStatusText');
+                if (user && ADMIN_EMAILS.includes(user.email.toLowerCase())) {
+                    statusBtnText.innerText = `এডমিন: ${user.email.split('@')[0]}`;
+                } else {
+                    statusBtnText.innerText = "এডমিন লগইন";
+                }
+                renderTable();
+            });
+        }
+
+        async function toggleAdminLogin() {
+            if (currentUser) {
+                if (confirm("আপনি কি এডমিন সেশন থেকে লগআউট করতে চান?")) {
+                    await auth.signOut();
+                    alert("লগআউট সফল হয়েছে।");
+                }
+            } else {
+                const email = prompt("এডমিন ইমেইল প্রদান করুন:");
+                if (!email) return;
+
+                if (!ADMIN_EMAILS.includes(email.toLowerCase().trim())) {
+                    alert("❌ দুঃখিত! এই ইমেইলটি এডমিন প্যানেলের জন্য অনুমোদিত নয়।");
+                    return;
+                }
+
+                const password = prompt("এডমিন পাসওয়ার্ড দিন:");
+                if (!password) return;
+
+                try {
+                    await auth.signInWithEmailAndPassword(email.trim(), password);
+                    alert("✅ এডমিন হিসেবে সফলভাবে লগইন করেছেন!");
+                } catch (err) {
+                    alert("❌ লগইন ব্যর্থ হয়েছে: " + err.message);
+                }
+            }
+        }
+
+        // ==========================================
+        // 4. FIRESTORE REALTIME DATABASE READ/WRITE
+        // ==========================================
+        function listenToFirestore() {
+            db.collection("complaints").orderBy("createdAt", "desc")
+              .onSnapshot(snapshot => {
+                  complaints = [];
+                  snapshot.forEach(doc => {
+                      complaints.push({ id: doc.id, ...doc.data() });
+                  });
+                  renderTable();
+              }, error => {
+                  console.error("Firestore read error:", error);
+              });
+        }
+
+        async function handleFormSubmit(e) {
+            e.preventDefault();
+
+            const zone = document.getElementById('modalZone').value;
+            const token = `T-${Math.floor(100000 + Math.random() * 900000)}`;
+
+            const newEntry = {
+                token: token,
+                zone: zone,
+                user: document.getElementById('modalUser').value,
+                phone: document.getElementById('modalPhone').value,
+                problem: document.getElementById('modalProblem').value,
+                address: document.getElementById('modalAddress').value,
+                technician: document.getElementById('modalTechnician').value,
+                priority: document.getElementById('modalPriority').value,
+                status: "Running",
+                technicianComment: "টেলিগ্রামে পাঠানো হয়েছে",
+                createdAt: firebase.firestore.FieldValue.serverTimestamp()
+            };
+
+            try {
+                await db.collection("complaints").add(newEntry);
+                closeComplaintModal();
+                alert(`✅ কমপ্লেন সফলভাবে ডাটাবেজে সংরক্ষণ ও ট্রান্সমিট করা হয়েছে!\nটোকেন নম্বর: ${token}`);
+                document.getElementById('modalForm').reset();
+            } catch (err) {
+                alert("❌ ডাটা সেভ করতে সমস্যা হয়েছে: " + err.message);
+            }
+        }
+
+        async function deleteComplaint(docId, token) {
+            // ডিলিট সিকিউরিটি চেক
+            if (!currentUser || !ADMIN_EMAILS.includes(currentUser.email.toLowerCase())) {
+                alert("🚫 পারমিশন ডিনাইড! কেবল অনুমোদিত এডমিন অ্যাকাউন্ট দিয়েই টিকিট ডিলিট করা সম্ভব।");
+                toggleAdminLogin();
+                return;
+            }
+
+            if (confirm(`⚠️ নিশ্চিত তো? টোকেন [${token}] স্থায়ীভাবে মুছে ফেলা হবে!`)) {
+                try {
+                    await db.collection("complaints").doc(docId).delete();
+                    alert("✅ কমপ্লেন সফলভাবে ডিলিট করা হয়েছে।");
+                } catch (err) {
+                    alert("❌ ডিলিট করতে ব্যর্থ: " + err.message);
+                }
+            }
+        }
+
+        // ==========================================
+        // 5. RENDER & FILTER UI
+        // ==========================================
+        function renderTable() {
+            const tbody = document.getElementById('complaintTableBody');
+            tbody.innerHTML = '';
+
+            const zoneVal = document.getElementById('filterZone').value;
+            const searchVal = document.getElementById('filterSearch').value.toLowerCase();
+            const statusVal = document.getElementById('filterStatus').value;
+
+            const filtered = complaints.filter(item => {
+                const matchZone = zoneVal === 'all' || item.zone === zoneVal;
+                const matchStatus = statusVal === 'all' || item.status === statusVal;
+                const matchSearch = (item.token && item.token.toLowerCase().includes(searchVal)) ||
+                                    (item.user && item.user.toLowerCase().includes(searchVal)) ||
+                                    (item.phone && item.phone.toLowerCase().includes(searchVal)) ||
+                                    (item.technician && item.technician.toLowerCase().includes(searchVal)) ||
+                                    (item.zone && item.zone.toLowerCase().includes(searchVal));
+                return matchZone && matchStatus && matchSearch;
+            });
+
+            if (filtered.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="9" class="text-center p-6 text-slate-500">কোনো তথ্য পাওয়া যায়নি</td></tr>`;
+                updateKPIs();
+                return;
+            }
+
+            const isAdminLoggedIn = currentUser && ADMIN_EMAILS.includes(currentUser.email.toLowerCase());
+
+            filtered.forEach(item => {
+                const tr = document.createElement('tr');
+                tr.className = "border-b border-slate-800/60 hover:bg-slate-800/30 transition";
+
+                let badgeClass = "bg-amber-500/10 text-amber-400 border-amber-500/20";
+                if (item.status === 'Completed') badgeClass = "bg-emerald-500/10 text-emerald-400 border-emerald-500/20";
+                if (item.status === 'Hold' || item.status === 'Cancelled') badgeClass = "bg-rose-500/10 text-rose-400 border-rose-500/20";
+
+                tr.innerHTML = `
+                    <td class="p-3.5 font-mono font-bold text-sky-400">${item.token || ''}</td>
+                    <td class="p-3.5 font-bold text-slate-200">${item.zone || ''}</td>
+                    <td class="p-3.5">
+                        <div class="text-white font-medium">${item.user || ''}</div>
+                        <div class="text-[11px] text-slate-400">${item.phone || ''}</div>
+                    </td>
+                    <td class="p-3.5 text-sky-300 font-medium">${item.problem || ''}</td>
+                    <td class="p-3.5 text-slate-400 max-w-xs truncate">${item.address || ''}</td>
+                    <td class="p-3.5 font-semibold text-indigo-300">👤 ${item.technician || ''}</td>
+                    <td class="p-3.5"><span class="px-2.5 py-1 rounded-full border text-[11px] ${badgeClass}">${item.status || 'Running'}</span></td>
+                    <td class="p-3.5 text-center text-slate-300 font-mono text-[11px] bg-slate-900/40 rounded-lg">${item.technicianComment || ''}</td>
+                    <td class="p-3.5 text-center">
+                        <button onclick="deleteComplaint('${item.id}', '${item.token}')" 
+                            class="p-2 rounded-lg ${isAdminLoggedIn ? 'bg-rose-500/20 hover:bg-rose-500 text-rose-400' : 'bg-slate-800 text-slate-600 cursor-not-allowed'} transition" 
+                            title="${isAdminLoggedIn ? 'ডিলিট করুন' : 'কেবলমাত্র এডমিন ডিলিট করতে পারবে'}">
+                            <i class="fa-solid fa-trash"></i>
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+            updateKPIs();
+        }
+
+        function filterData() { renderTable(); }
+
+        function resetFilters() {
+            document.getElementById('filterZone').value = 'all';
+            document.getElementById('filterSearch').value = '';
+            document.getElementById('filterStatus').value = 'all';
+            renderTable();
+        }
+
+        function updateKPIs() {
+            document.getElementById('statTotal').innerText = complaints.length;
+            document.getElementById('statRunning').innerText = complaints.filter(c => c.status === 'Running').length;
+            document.getElementById('statCompleted').innerText = complaints.filter(c => c.status === 'Completed').length;
+            document.getElementById('statHold').innerText = complaints.filter(c => c.status === 'Hold' || c.status === 'Cancelled').length;
+        }
+
+        /* Modal Visibility Controls */
+        function openComplaintModal() { document.getElementById('complaintModal').classList.remove('hidden'); }
+        function closeComplaintModal() { document.getElementById('complaintModal').classList.add('hidden'); }
+        function openFilterModal() { document.getElementById('filterModal').classList.remove('hidden'); }
+        function closeFilterModal() { document.getElementById('filterModal').classList.add('hidden'); }
+    </script>
+</body>
+</html>
