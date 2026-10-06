@@ -58,121 +58,129 @@
 </head>
 <body class="min-h-screen flex flex-col antialiased">
 
-    <!-- Top Header -->
-    <header class="sticky top-0 z-40 glass-panel border-b border-slate-700/50 px-4 lg:px-8 py-3 flex justify-between items-center">
-        <div class="flex items-center gap-3">
-            <!-- Brand Logo -->
-            <div class="w-10 h-10 rounded-xl overflow-hidden bg-slate-800 flex items-center justify-center border border-slate-700 shadow-lg">
-                <img id="brandLogo" src="https://via.placeholder.com/150?text=SAM" alt="SAM ONLINE Logo" class="w-full h-full object-cover" onerror="this.src='https://cdn-icons-png.flaticon.com/512/843/843259.png'">
+    <!-- ========================================== -->
+    <!-- 1. INITIAL FULLSCREEN LOGIN VIEW -->
+    <!-- ========================================== -->
+    <div id="fullLoginPage" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/90 backdrop-blur-md">
+        <div class="glass-panel w-full max-w-md rounded-2xl border border-slate-700/60 p-8 shadow-2xl relative">
+            <div class="text-center mb-6">
+                <!-- Brand Logo (Login Window) -->
+                <div class="w-32 h-16 rounded-xl bg-white/95 p-2 flex items-center justify-center border border-slate-700 shadow-xl mx-auto mb-3">
+                    <img src="1000224523.png" alt="SAM ONLINE Logo" class="w-full h-full object-contain">
+                </div>
+                <h2 class="text-xl font-bold bg-gradient-to-r from-sky-400 via-cyan-300 to-indigo-300 bg-clip-text text-transparent">SAM ONLINE ISP</h2>
+                <p class="text-xs text-slate-400 mt-1">ওয়েবসাইটে ঢোকার জন্য Email address ও পাসওয়ার্ড দিয়ে লগইন করুন</p>
             </div>
-            <div>
-                <h1 class="font-bold text-lg leading-tight bg-gradient-to-r from-sky-400 via-cyan-300 to-indigo-300 bg-clip-text text-transparent">SAM ONLINE ISP</h1>
-                <p class="text-xs text-slate-400">৫৫টি জোন অটোমেশন ও স্মার্ট টিকিটিং হাব</p>
-            </div>
+
+            <form id="fullLoginForm" onsubmit="handleLoginSubmit(event)" class="space-y-4">
+                <div>
+                    <label class="block text-xs text-slate-300 mb-1 font-medium">Email address *</label>
+                    <div class="relative">
+                        <input type="email" id="loginEmail" required placeholder="admin@samonline.com" class="w-full glass-input text-xs rounded-xl pl-9 pr-3 py-3">
+                        <i class="fa-solid fa-envelope absolute left-3 top-3.5 text-xs text-slate-400"></i>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs text-slate-300 mb-1 font-medium">পাসওয়ার্ড *</label>
+                    <div class="relative">
+                        <input type="password" id="loginPassword" required placeholder="••••••••" class="w-full glass-input text-xs rounded-xl pl-9 pr-3 py-3">
+                        <i class="fa-solid fa-lock absolute left-3 top-3.5 text-xs text-slate-400"></i>
+                    </div>
+                </div>
+
+                <div id="loginError" class="text-xs text-rose-400 hidden bg-rose-500/10 p-3 rounded-xl border border-rose-500/20"></div>
+
+                <button type="submit" id="loginSubmitBtn" class="w-full py-3 rounded-xl bg-gradient-to-r from-sky-500 to-indigo-600 hover:from-sky-400 hover:to-indigo-500 text-white text-xs font-semibold shadow-lg shadow-sky-500/20 transition active:scale-95">
+                    লগইন করুন
+                </button>
+            </form>
         </div>
-
-        <!-- Action Buttons Section -->
-        <div class="flex items-center gap-2 sm:gap-3">
-            <!-- Admin Login/Status Indicator -->
-            <button id="adminLoginBtn" onclick="handleAdminBtnClick()" class="bg-indigo-600/20 hover:bg-indigo-600/30 border border-indigo-500/30 text-indigo-300 text-xs font-medium px-3.5 py-2.5 rounded-xl transition flex items-center gap-2">
-                <i class="fa-solid fa-user-shield"></i>
-                <span id="adminStatusText">এডমিন লগইন</span>
-            </button>
-
-            <!-- Smart Filter Modal Trigger Button -->
-            <button onclick="openFilterModal()" class="bg-slate-800 hover:bg-slate-700 border border-slate-600/80 text-slate-200 text-xs font-medium px-3.5 py-2.5 rounded-xl shadow-md flex items-center gap-2 transition active:scale-95">
-                <i class="fa-solid fa-filter text-sky-400 text-sm"></i>
-                <span class="hidden sm:inline">স্মার্ট ফিল্টার</span>
-            </button>
-
-            <!-- New Complaint Entry Modal Trigger Button -->
-            <button onclick="openComplaintModal()" class="bg-gradient-to-r from-sky-500 to-blue-600 hover:from-sky-400 hover:to-blue-500 text-white text-xs font-semibold px-4 py-2.5 rounded-xl shadow-lg shadow-sky-500/20 flex items-center gap-2 transition active:scale-95">
-                <i class="fa-solid fa-plus-circle text-sm"></i>
-                <span>নতুন কমপ্লেন এন্ট্রি</span>
-            </button>
-        </div>
-    </header>
-
-    <div class="flex-1 p-4 lg:p-6 space-y-6">
-        
-        <!-- Live KPI Counter Cards Grid -->
-        <section class="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div class="glass-panel rounded-2xl p-4 border border-slate-700/50">
-                <p class="text-xs text-slate-400">মোট কমপ্লেন (Total)</p>
-                <h3 class="text-2xl font-bold mt-1 text-white font-mono" id="statTotal">0</h3>
-            </div>
-            <div class="glass-panel rounded-2xl p-4 border border-slate-700/50">
-                <p class="text-xs text-amber-400">চলমান (Running)</p>
-                <h3 class="text-2xl font-bold mt-1 text-amber-400 font-mono" id="statRunning">0</h3>
-            </div>
-            <div class="glass-panel rounded-2xl p-4 border border-slate-700/50">
-                <p class="text-xs text-emerald-400">সম্পন্ন (Completed)</p>
-                <h3 class="text-2xl font-bold mt-1 text-emerald-400 font-mono" id="statCompleted">0</h3>
-            </div>
-            <div class="glass-panel rounded-2xl p-4 border border-slate-700/50">
-                <p class="text-xs text-rose-400">স্থগিত / বাতিল (Hold/Cancel)</p>
-                <h3 class="text-2xl font-bold mt-1 text-rose-400 font-mono" id="statHold">0</h3>
-            </div>
-        </section>
-
-        <!-- Complaints Table -->
-        <section class="glass-panel rounded-2xl p-5 border border-slate-800">
-            <div class="overflow-x-auto rounded-xl border border-slate-800">
-                <table class="w-full text-left text-xs text-slate-300">
-                    <thead class="bg-slate-900/90 text-slate-400 font-semibold uppercase text-[11px] border-b border-slate-800">
-                        <tr>
-                            <th class="p-3.5">টোকেন নং</th>
-                            <th class="p-3.5">Zone অফিস</th>
-                            <th class="p-3.5">গ্রাহক আইডি & ফোন</th>
-                            <th class="p-3.5">সমস্যার ধরন</th>
-                            <th class="p-3.5">ঠিকানা</th>
-                            <th class="p-3.5">অ্যাসাইনড টেকনিশিয়ান</th>
-                            <th class="p-3.5">স্ট্যাটাস</th>
-                            <th class="p-3.5 text-center">বট কমেন্ট & ব্যবহারিত মালামাল</th>
-                            <th class="p-3.5 text-center">অ্যাকশন</th>
-                        </tr>
-                    </thead>
-                    <tbody id="complaintTableBody" class="divide-y divide-slate-800/60 bg-slate-950/30">
-                        <!-- Dynamic Rows -->
-                    </tbody>
-                </table>
-            </div>
-        </section>
     </div>
 
-    <!-- ADMIN LOGIN MODAL POPUP -->
-    <div id="loginModal" class="fixed inset-0 z-50 hidden bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
-        <div class="glass-panel w-full max-w-md rounded-2xl border border-slate-700 p-6 shadow-2xl relative">
-            <div class="flex justify-between items-center pb-4 mb-4 border-b border-slate-800">
-                <h3 class="text-base font-bold text-white flex items-center gap-2">
-                    <i class="fa-solid fa-user-shield text-indigo-400"></i>
-                    <span>এডমিন লগইন</span>
-                </h3>
-                <button onclick="closeLoginModal()" class="text-slate-400 hover:text-white p-1">
-                    <i class="fa-solid fa-xmark text-lg"></i>
-                </button>
+    <!-- ========================================== -->
+    <!-- 2. MAIN DASHBOARD CONTENT (HIDDEN BY DEFAULT) -->
+    <!-- ========================================== -->
+    <div id="mainDashboard" class="hidden min-h-screen flex flex-col">
+        <!-- Top Header -->
+        <header class="sticky top-0 z-40 glass-panel border-b border-slate-700/50 px-4 lg:px-8 py-3 flex justify-between items-center">
+            <div class="flex items-center gap-3">
+                <!-- Brand Logo (Main Header) -->
+                <div class="h-11 px-3 rounded-xl bg-white/95 flex items-center justify-center border border-slate-700 shadow-lg">
+                    <img id="brandLogo" src="1000224523.png" alt="SAM ONLINE Logo" class="h-8 w-auto object-contain">
+                </div>
+                <div>
+                    <h1 class="font-bold text-lg leading-tight bg-gradient-to-r from-sky-400 via-cyan-300 to-indigo-300 bg-clip-text text-transparent">SAM ONLINE ISP</h1>
+                    <p class="text-xs text-slate-400">৫৫টি জোন অটোমেশন ও স্মার্ট টিকিটিং হাব</p>
+                </div>
             </div>
 
-            <form id="loginForm" onsubmit="handleLoginSubmit(event)" class="space-y-4">
-                <div>
-                    <label class="block text-xs text-slate-300 mb-1">এডমিন ইমেইল *</label>
-                    <input type="email" id="loginEmail" required placeholder="admin@samonline.com" class="w-full glass-input text-xs rounded-xl p-2.5">
-                </div>
+            <!-- Action Buttons Section -->
+            <div class="flex items-center gap-2 sm:gap-3">
+                <!-- Admin Status / Logout Button -->
+                <button id="adminLogoutBtn" onclick="handleLogout()" class="bg-rose-600/20 hover:bg-rose-600/30 border border-rose-500/30 text-rose-300 text-xs font-medium px-3.5 py-2.5 rounded-xl transition flex items-center gap-2">
+                    <i class="fa-solid fa-right-from-bracket"></i>
+                    <span id="adminStatusText">লগআউট</span>
+                </button>
 
-                <div>
-                    <label class="block text-xs text-slate-300 mb-1">পাসওয়ার্ড *</label>
-                    <input type="password" id="loginPassword" required placeholder="••••••••" class="w-full glass-input text-xs rounded-xl p-2.5">
-                </div>
+                <!-- Smart Filter Modal Trigger Button -->
+                <button onclick="openFilterModal()" class="bg-slate-800 hover:bg-slate-700 border border-slate-600/80 text-slate-200 text-xs font-medium px-3.5 py-2.5 rounded-xl shadow-md flex items-center gap-2 transition active:scale-95">
+                    <i class="fa-solid fa-filter text-sky-400 text-sm"></i>
+                    <span class="hidden sm:inline">স্মার্ট ফিল্টার</span>
+                </button>
 
-                <div id="loginError" class="text-xs text-rose-400 hidden bg-rose-500/10 p-2.5 rounded-xl border border-rose-500/20"></div>
+                <!-- New Complaint Entry Modal Trigger Button -->
+                <button onclick="openComplaintModal()" class="bg-gradient-to-r from-sky-500 to-blue-600 hover:from-sky-400 hover:to-blue-500 text-white text-xs font-semibold px-4 py-2.5 rounded-xl shadow-lg shadow-sky-500/20 flex items-center gap-2 transition active:scale-95">
+                    <i class="fa-solid fa-plus-circle text-sm"></i>
+                    <span>নতুন কমপ্লেন এন্ট্রি</span>
+                </button>
+            </div>
+        </header>
 
-                <div class="flex justify-end gap-3 pt-3 border-t border-slate-800">
-                    <button type="button" onclick="closeLoginModal()" class="px-4 py-2.5 rounded-xl bg-slate-800 text-slate-300 text-xs">বাতিল</button>
-                    <button type="submit" id="loginSubmitBtn" class="px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold shadow-lg shadow-indigo-600/25">
-                        লগইন করুন
-                    </button>
+        <div class="flex-1 p-4 lg:p-6 space-y-6">
+            <!-- Live KPI Counter Cards Grid -->
+            <section class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div class="glass-panel rounded-2xl p-4 border border-slate-700/50">
+                    <p class="text-xs text-slate-400">মোট কমপ্লেন (Total)</p>
+                    <h3 class="text-2xl font-bold mt-1 text-white font-mono" id="statTotal">0</h3>
                 </div>
-            </form>
+                <div class="glass-panel rounded-2xl p-4 border border-slate-700/50">
+                    <p class="text-xs text-amber-400">চলমান (Running)</p>
+                    <h3 class="text-2xl font-bold mt-1 text-amber-400 font-mono" id="statRunning">0</h3>
+                </div>
+                <div class="glass-panel rounded-2xl p-4 border border-slate-700/50">
+                    <p class="text-xs text-emerald-400">সম্পন্ন (Completed)</p>
+                    <h3 class="text-2xl font-bold mt-1 text-emerald-400 font-mono" id="statCompleted">0</h3>
+                </div>
+                <div class="glass-panel rounded-2xl p-4 border border-slate-700/50">
+                    <p class="text-xs text-rose-400">স্থগিত / বাতিল (Hold/Cancel)</p>
+                    <h3 class="text-2xl font-bold mt-1 text-rose-400 font-mono" id="statHold">0</h3>
+                </div>
+            </section>
+
+            <!-- Complaints Table -->
+            <section class="glass-panel rounded-2xl p-5 border border-slate-800">
+                <div class="overflow-x-auto rounded-xl border border-slate-800">
+                    <table class="w-full text-left text-xs text-slate-300">
+                        <thead class="bg-slate-900/90 text-slate-400 font-semibold uppercase text-[11px] border-b border-slate-800">
+                            <tr>
+                                <th class="p-3.5">টোকেন নং</th>
+                                <th class="p-3.5">Zone অফিস</th>
+                                <th class="p-3.5">গ্রাহক আইডি & ফোন</th>
+                                <th class="p-3.5">সমস্যার ধরন</th>
+                                <th class="p-3.5">ঠিকানা</th>
+                                <th class="p-3.5">অ্যাসাইনড টেকনিশিয়ান</th>
+                                <th class="p-3.5">স্ট্যাটাস</th>
+                                <th class="p-3.5 text-center">বট কমেন্ট & ব্যবহারিত মালামাল</th>
+                                <th class="p-3.5 text-center">অ্যাকশন</th>
+                            </tr>
+                        </thead>
+                        <tbody id="complaintTableBody" class="divide-y divide-slate-800/60 bg-slate-950/30">
+                            <!-- Dynamic Rows -->
+                        </tbody>
+                    </table>
+                </div>
+            </section>
         </div>
     </div>
 
@@ -204,7 +212,7 @@
                             <option value="all">সকল স্ট্যাটাস</option>
                             <option value="Running">🟡 Running</option>
                             <option value="Completed">🟢 Completed (Ok/Done)</option>
-                            <option value="Hold">⏸️ Hold</option>
+                            <option value="Hold">⏸ Hold</option>
                             <option value="Cancelled">❌ Cancelled</option>
                         </select>
                     </div>
@@ -340,7 +348,6 @@
         window.addEventListener('DOMContentLoaded', () => {
             populateZoneDropdowns();
             listenToAuth();
-            listenToFirestore();
         });
 
         function populateZoneDropdowns() {
@@ -361,31 +368,31 @@
         }
 
         // ==========================================
-        // 3. AUTHENTICATION & SECURITY
+        // 3. AUTHENTICATION & ACCESS CONTROL
         // ==========================================
         function listenToAuth() {
             auth.onAuthStateChanged(user => {
-                currentUser = user;
+                const fullLoginPage = document.getElementById('fullLoginPage');
+                const mainDashboard = document.getElementById('mainDashboard');
                 const statusBtnText = document.getElementById('adminStatusText');
-                if (user && ADMIN_EMAILS.includes(user.email.toLowerCase())) {
-                    statusBtnText.innerText = `এডমিন: ${user.email.split('@')[0]}`;
-                } else {
-                    statusBtnText.innerText = "এডমিন লগইন";
-                }
-                renderTable();
-            });
-        }
 
-        function handleAdminBtnClick() {
-            if (currentUser) {
-                if (confirm("আপনি কি এডমিন সেশন থেকে লগআউট করতে চান?")) {
-                    auth.signOut().then(() => {
-                        alert("লগআউট সফল হয়েছে।");
-                    });
+                if (user && ADMIN_EMAILS.includes(user.email.toLowerCase())) {
+                    currentUser = user;
+                    statusBtnText.innerText = `লগআউট (${user.email.split('@')[0]})`;
+                    
+                    // ড্যাশবোর্ড দৃশ্যমান করুন এবং লগইন পেজ লুকান
+                    fullLoginPage.classList.add('hidden');
+                    mainDashboard.classList.remove('hidden');
+
+                    listenToFirestore();
+                } else {
+                    currentUser = null;
+                    
+                    // ড্যাশবোর্ড লুকান এবং লগইন পেজ দৃশ্যমান করুন
+                    fullLoginPage.classList.remove('hidden');
+                    mainDashboard.classList.add('hidden');
                 }
-            } else {
-                openLoginModal();
-            }
+            });
         }
 
         async function handleLoginSubmit(e) {
@@ -408,15 +415,21 @@
 
             try {
                 await auth.signInWithEmailAndPassword(email, password);
-                closeLoginModal();
-                alert("✅ এডমিন হিসেবে সফলভাবে লগইন করেছেন!");
-                document.getElementById('loginForm').reset();
+                document.getElementById('fullLoginForm').reset();
             } catch (err) {
                 errDiv.innerText = "❌ লগইন ব্যর্থ: " + (err.message.includes('wrong-password') ? 'ভুল পাসওয়ার্ড দেওয়া হয়েছে।' : err.message);
                 errDiv.classList.remove('hidden');
             } finally {
                 btn.disabled = false;
                 btn.innerText = "লগইন করুন";
+            }
+        }
+
+        function handleLogout() {
+            if (confirm("আপনি কি নিশ্চিত যে লগআউট করতে চান?")) {
+                auth.signOut().then(() => {
+                    alert("সফলভাবে লগআউট হয়েছে।");
+                });
             }
         }
 
@@ -467,11 +480,7 @@
         }
 
         async function deleteComplaint(docId, token) {
-            if (!currentUser || !ADMIN_EMAILS.includes(currentUser.email.toLowerCase())) {
-                alert("🚫 পারমিশন ডিনাইড! কেবল অনুমোদিত এডমিন অ্যাকাউন্ট দিয়েই টিকিট ডিলিট করা সম্ভব।");
-                openLoginModal();
-                return;
-            }
+            if (!currentUser) return;
 
             if (confirm(`⚠️ নিশ্চিত তো? টোকেন [${token}] স্থায়ীভাবে মুছে ফেলা হবে!`)) {
                 try {
@@ -511,8 +520,6 @@
                 return;
             }
 
-            const isAdminLoggedIn = currentUser && ADMIN_EMAILS.includes(currentUser.email.toLowerCase());
-
             filtered.forEach(item => {
                 const tr = document.createElement('tr');
                 tr.className = "border-b border-slate-800/60 hover:bg-slate-800/30 transition";
@@ -535,8 +542,8 @@
                     <td class="p-3.5 text-center text-slate-300 font-mono text-[11px] bg-slate-900/40 rounded-lg">${item.technicianComment || ''}</td>
                     <td class="p-3.5 text-center">
                         <button onclick="deleteComplaint('${item.id}', '${item.token}')" 
-                            class="p-2 rounded-lg ${isAdminLoggedIn ? 'bg-rose-500/20 hover:bg-rose-500 text-rose-400' : 'bg-slate-800 text-slate-600 cursor-not-allowed'} transition" 
-                            title="${isAdminLoggedIn ? 'ডিলিট করুন' : 'কেবলমাত্র এডমিন ডিলিট করতে পারবে'}">
+                            class="p-2 rounded-lg bg-rose-500/20 hover:bg-rose-500 text-rose-400 transition" 
+                            title="ডিলিট করুন">
                             <i class="fa-solid fa-trash"></i>
                         </button>
                     </td>
@@ -564,11 +571,6 @@
         }
 
         /* Modal Controls */
-        function openLoginModal() { document.getElementById('loginModal').classList.remove('hidden'); }
-        function closeLoginModal() { 
-            document.getElementById('loginModal').classList.add('hidden'); 
-            document.getElementById('loginError').classList.add('hidden');
-        }
         function openComplaintModal() { document.getElementById('complaintModal').classList.remove('hidden'); }
         function closeComplaintModal() { document.getElementById('complaintModal').classList.add('hidden'); }
         function openFilterModal() { document.getElementById('filterModal').classList.remove('hidden'); }
