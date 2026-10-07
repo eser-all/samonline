@@ -1,3034 +1,953 @@
 <!DOCTYPE html>
 <html lang="en" data-bs-theme="light">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<title>Sam Online - Complaint & Task Management System</title>
-
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-
-<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;600;700;800&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
-
-<style>
-:root{
-    --primary:#0d6efd;
-    --secondary:#6f42c1;
-    --success:#198754;
-    --danger:#dc3545;
-    --warning:#ffc107;
-    --bg:#f5f7fb;
-    --card:#ffffff;
-    --text:#1f2937;
-    --muted:#6b7280;
-    --border:#dee2e6;
-    --shadow:0 10px 30px rgba(0,0,0,.08);
-}
-
-[data-bs-theme="dark"]{
-    --bg:#090d16;
-    --card:#111827;
-    --text:#f8fafc;
-    --muted:#94a3b8;
-    --border:#263244;
-    --shadow:0 10px 30px rgba(0,0,0,.30);
-}
-
-[data-bs-theme="ai"]{
-    --bg:#070b16;
-    --card:rgba(16,24,45,.92);
-    --text:#eef6ff;
-    --muted:#9fb2ca;
-    --border:#24395d;
-    --shadow:0 0 35px rgba(0,150,255,.15);
-}
-
-*{
-    box-sizing:border-box;
-}
-
-body{
-    margin:0;
-    min-height:100vh;
-    background:var(--bg);
-    color:var(--text);
-    font-family:'Roboto',sans-serif;
-    transition:.25s ease;
-}
-
-body::before{
-    content:"";
-    position:fixed;
-    inset:0;
-    pointer-events:none;
-    z-index:-1;
-    background:
-        radial-gradient(circle at 10% 10%,rgba(13,110,253,.08),transparent 30%),
-        radial-gradient(circle at 90% 20%,rgba(111,66,193,.08),transparent 30%);
-}
-
-h1,h2,h3,h4,h5,
-.brand-font,
-.orbitron{
-    font-family:'Orbitron',sans-serif;
-}
-
-.btn{
-    border-radius:10px;
-}
-
-.card{
-    background:var(--card);
-    border:1px solid var(--border);
-    box-shadow:var(--shadow);
-    color:var(--text);
-}
-
-.form-control,
-.form-select{
-    background:var(--card);
-    color:var(--text);
-    border-color:var(--border);
-}
-
-.form-control:focus,
-.form-select:focus{
-    background:var(--card);
-    color:var(--text);
-}
-
-.form-control::placeholder{
-    color:var(--muted);
-}
-
-.table{
-    color:var(--text);
-    margin-bottom:0;
-}
-
-.table thead th{
-    white-space:nowrap;
-    font-size:.82rem;
-}
-
-.table-responsive{
-    border-radius:14px;
-}
-
-.badge{
-    font-weight:500;
-}
-
-#loader{
-    position:fixed;
-    inset:0;
-    z-index:99999;
-    display:none;
-    align-items:center;
-    justify-content:center;
-    background:rgba(0,0,0,.65);
-    backdrop-filter:blur(8px);
-}
-
-.loader-box{
-    min-width:250px;
-    padding:25px;
-    border-radius:18px;
-    background:var(--card);
-    text-align:center;
-    box-shadow:0 15px 50px rgba(0,0,0,.3);
-}
-
-.spinner-ring{
-    width:48px;
-    height:48px;
-    margin:0 auto 15px;
-    border:4px solid rgba(13,110,253,.18);
-    border-top-color:#0d6efd;
-    border-radius:50%;
-    animation:spin .8s linear infinite;
-}
-
-@keyframes spin{
-    to{transform:rotate(360deg);}
-}
-
-#authSection{
-    min-height:100vh;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    padding:20px;
-}
-
-.auth-card{
-    width:100%;
-    max-width:440px;
-    padding:32px;
-    border-radius:24px;
-}
-
-.auth-logo{
-    width:90px;
-    height:90px;
-    margin:auto;
-    display:block;
-}
-
-.logo-svg{
-    width:42px;
-    height:42px;
-    flex-shrink:0;
-}
-
-.dashboard-wrap{
-    min-height:100vh;
-}
-
-.main-header{
-    position:sticky;
-    top:0;
-    z-index:1000;
-    background:rgba(255,255,255,.92);
-    border-bottom:1px solid var(--border);
-    backdrop-filter:blur(16px);
-}
-
-[data-bs-theme="dark"] .main-header,
-[data-bs-theme="ai"] .main-header{
-    background:rgba(9,13,22,.90);
-}
-
-.header-inner{
-    min-height:68px;
-    display:flex;
-    align-items:center;
-    gap:8px;
-    overflow-x:auto;
-    scrollbar-width:thin;
-}
-
-.header-inner::-webkit-scrollbar{
-    height:3px;
-}
-
-.brand-area{
-    display:flex;
-    align-items:center;
-    gap:8px;
-    margin-right:auto;
-    flex-shrink:0;
-}
-
-.brand-title{
-    font-size:1rem;
-    font-weight:800;
-    letter-spacing:.5px;
-    white-space:nowrap;
-}
-
-.ai-mood{
-    font-size:.62rem;
-    padding:4px 7px;
-    border-radius:20px;
-    background:rgba(13,110,253,.12);
-    color:#0d6efd;
-    white-space:nowrap;
-}
-
-.header-tools{
-    display:flex;
-    align-items:center;
-    gap:6px;
-    flex-shrink:0;
-}
-
-.header-tools .form-select{
-    width:auto;
-    min-width:125px;
-    height:38px;
-    font-size:.82rem;
-}
-
-.header-search{
-    width:180px;
-}
-
-.header-auth{
-    display:flex;
-    align-items:center;
-    gap:5px;
-    margin-left:3px;
-    padding-left:5px;
-    border-left:1px solid var(--border);
-}
-
-.user-email-pill{
-    height:38px;
-    max-width:190px;
-    padding:0 10px;
-    display:flex;
-    align-items:center;
-    gap:5px;
-    border:1px solid var(--border);
-    border-radius:10px;
-    background:rgba(13,110,253,.06);
-    color:var(--text);
-    font-size:.72rem;
-    white-space:nowrap;
-    overflow:hidden;
-}
-
-.user-email-pill i{
-    color:#0d6efd;
-    flex-shrink:0;
-}
-
-.user-email-text{
-    overflow:hidden;
-    text-overflow:ellipsis;
-}
-
-.icon-btn{
-    width:38px;
-    height:38px;
-    padding:0;
-    display:inline-flex;
-    align-items:center;
-    justify-content:center;
-    border-radius:10px;
-}
-
-.logout-btn{
-    border:1px solid rgba(220,53,69,.45);
-    color:#dc3545;
-    background:transparent;
-}
-
-.logout-btn:hover{
-    color:#fff;
-    background:#dc3545;
-}
-
-.theme-btn{
-    border:1px solid var(--border);
-    color:var(--text);
-    background:var(--card);
-}
-
-.kpi-card{
-    padding:20px;
-    border-radius:18px;
-    height:100%;
-}
-
-.kpi-icon{
-    width:45px;
-    height:45px;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    border-radius:13px;
-    font-size:1.2rem;
-}
-
-.kpi-number{
-    font-family:'Orbitron',sans-serif;
-    font-size:1.7rem;
-    font-weight:700;
-}
-
-.task-card{
-    border-radius:20px;
-    overflow:hidden;
-}
-
-.task-table-wrap{
-    overflow-x:auto;
-}
-
-.task-table{
-    min-width:1250px;
-}
-
-.task-table td{
-    vertical-align:middle;
-    font-size:.82rem;
-}
-
-.task-actions{
-    display:flex;
-    gap:4px;
-    flex-wrap:nowrap;
-}
-
-.action-btn{
-    width:34px;
-    height:34px;
-    padding:0;
-    display:inline-flex;
-    align-items:center;
-    justify-content:center;
-    border-radius:8px;
-}
-
-.btn-wa{
-    background:#25D366;
-    border-color:#25D366;
-    color:#fff;
-}
-
-.btn-wa:hover{
-    background:#1ebe5d;
-    border-color:#1ebe5d;
-    color:#fff;
-}
-
-.status-badge{
-    font-size:.72rem;
-}
-
-.priority-badge{
-    font-size:.7rem;
-}
-
-.modal-content{
-    background:var(--card);
-    color:var(--text);
-    border-color:var(--border);
-}
-
-.modal-header,
-.modal-footer{
-    border-color:var(--border);
-}
-
-.share-preview{
-    white-space:pre-wrap;
-    max-height:380px;
-    overflow:auto;
-    background:rgba(127,127,127,.07);
-    border:1px solid var(--border);
-    border-radius:12px;
-    padding:15px;
-    font-size:.85rem;
-    line-height:1.6;
-}
-
-.footer{
-    padding:25px 0;
-    color:var(--muted);
-    text-align:center;
-    font-size:.8rem;
-}
-
-.antu-name{
-    font-family:'Orbitron',sans-serif;
-    font-weight:700;
-    animation:pulseText 1.8s infinite;
-}
-
-@keyframes pulseText{
-    0%,100%{opacity:.55;}
-    50%{opacity:1;}
-}
-
-.empty-state{
-    padding:50px 20px;
-    text-align:center;
-    color:var(--muted);
-}
-
-@media(max-width:900px){
-    .brand-title{
-        display:none;
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sam Online - Complaint & Task Management System</title>
+  
+  <!-- Bootstrap 5 CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;800&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --tg-primary: #2AABEE;
+      --tg-primary-hover: #229ED9;
+      --tg-bg: #E7EBF0;
+      --tg-card-bg: rgba(255, 255, 255, 0.96);
+      --tg-text-main: #1C1C1E;
+      --tg-text-muted: #5A626A;
+      --tg-border: #D1D8E0;
+      --tg-input-bg: #FFFFFF;
+      --tg-focus-shadow: rgba(42, 171, 238, 0.25);
+    }
+    
+    [data-bs-theme="dark"] {
+      --tg-primary: #8774E1;
+      --tg-primary-hover: #6C52DF;
+      --tg-bg: #0F1721;
+      --tg-card-bg: rgba(24, 34, 45, 0.96);
+      --tg-text-main: #F5F5F7;
+      --tg-text-muted: #9BA3AF;
+      --tg-border: #2A3B4C;
+      --tg-input-bg: #1E293B;
+      --tg-focus-shadow: rgba(135, 116, 225, 0.25);
     }
 
-    .header-search{
-        width:145px;
+    [data-bs-theme="ai"] {
+      --tg-primary: #00f0ff;
+      --tg-primary-hover: #0070f3;
+      --tg-bg: #050811;
+      --tg-card-bg: rgba(10, 16, 30, 0.94);
+      --tg-text-main: #E0F7FC;
+      --tg-text-muted: #8AAAC8;
+      --tg-border: rgba(0, 240, 255, 0.3);
+      --tg-input-bg: rgba(15, 23, 42, 0.9);
+      --tg-focus-shadow: rgba(0, 240, 255, 0.4);
+    }
+    
+    body { 
+      background-color: var(--tg-bg) !important; 
+      font-family: 'Roboto', -apple-system, BlinkMacSystemFont, sans-serif; 
+      color: var(--tg-text-main);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      font-size: 0.95rem;
+      transition: all 0.3s ease;
     }
 
-    .header-tools .form-select{
-        min-width:110px;
+    .telegram-bubble {
+      position: relative;
+      background: var(--tg-input-bg);
+      border: 1px solid var(--tg-border);
+      border-radius: 14px;
+      padding: 14px 18px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
     }
 
-    .user-email-pill{
-        max-width:150px;
+    .content-wrapper { flex: 1; }
+    
+    .header-banner { 
+      background-color: var(--tg-card-bg); 
+      backdrop-filter: blur(8px);
+      padding: 10px 0; 
+      border-bottom: 1px solid var(--tg-border);
     }
-}
+    
+    .brand-logo-box {
+      border: 1px solid var(--tg-border);
+      border-radius: 10px;
+      padding: 4px 10px;
+      background: #ffffff;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      flex-shrink: 0;
+    }
 
-@media(max-width:600px){
-    .auth-card{
-        padding:24px 18px;
+    .card-custom { 
+      background-color: var(--tg-card-bg);
+      backdrop-filter: blur(10px);
+      border: 1px solid var(--tg-border); 
+      border-radius: 14px; 
+      overflow: hidden;
+      transition: all 0.3s ease;
     }
 
-    .user-email-pill{
-        max-width:125px;
+    /* Metric Cards */
+    .stat-card {
+      border-radius: 12px;
+      padding: 12px 18px;
+      background: var(--tg-card-bg);
+      border: 1px solid var(--tg-border);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      transition: transform 0.2s ease;
+    }
+    .stat-card:hover {
+      transform: translateY(-2px);
+    }
+    .stat-icon {
+      width: 42px;
+      height: 42px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.25rem;
     }
 
-    .header-search{
-        width:130px;
+    .form-control, .form-select {
+      background-color: var(--tg-input-bg);
+      border: 1px solid var(--tg-border);
+      border-radius: 8px;
+      color: var(--tg-text-main);
+      font-size: 0.88rem;
+      padding: 6px 12px;
     }
-}
-</style>
+    .form-control:focus, .form-select:focus {
+      background-color: var(--tg-card-bg);
+      border-color: var(--tg-primary);
+      box-shadow: 0 0 0 0.2rem var(--tg-focus-shadow);
+      color: var(--tg-text-main);
+    }
+
+    .compact-search-box {
+      min-width: 170px;
+      max-width: 220px;
+    }
+
+    .compact-select {
+      min-width: 120px;
+      max-width: 140px;
+    }
+
+    .btn-tg {
+      background-color: var(--tg-primary);
+      color: #ffffff;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 0.88rem;
+      border: none;
+      padding: 6px 14px;
+      transition: all 0.2s ease;
+      white-space: nowrap;
+    }
+    [data-bs-theme="ai"] .btn-tg { color: #050811; }
+    .btn-tg:hover { background-color: var(--tg-primary-hover); color: #fff; }
+
+    .btn-wa {
+      background-color: #25D366;
+      color: #ffffff;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 0.88rem;
+      border: none;
+      padding: 6px 14px;
+      transition: all 0.2s ease;
+      white-space: nowrap;
+    }
+    .btn-wa:hover { background-color: #1EBE5D; color: #fff; }
+
+    .auth-container { max-width: 420px; margin: 80px auto; }
+    .loading-overlay { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.4); backdrop-filter: blur(3px); z-index: 9999; justify-content: center; align-items: center; }
+    
+    .app-footer { 
+      background-color: var(--tg-card-bg); 
+      color: var(--tg-text-muted); 
+      padding: 12px 0; 
+      font-size: 0.88rem; 
+      border-top: 1px solid var(--tg-border);
+      margin-top: auto; 
+    }
+
+    @keyframes rgbColorChange {
+      0%   { color: #ff0055; text-shadow: 0 0 8px rgba(255, 0, 85, 0.4); }
+      20%  { color: #ffae00; text-shadow: 0 0 8px rgba(255, 174, 0, 0.4); }
+      40%  { color: #39ff14; text-shadow: 0 0 8px rgba(57, 255, 20, 0.4); }
+      60%  { color: #00f0ff; text-shadow: 0 0 8px rgba(0, 240, 255, 0.4); }
+      80%  { color: #aa00ff; text-shadow: 0 0 8px rgba(170, 0, 255, 0.4); }
+      100% { color: #ff0055; text-shadow: 0 0 8px rgba(255, 0, 85, 0.4); }
+    }
+
+    .animated-author {
+      font-weight: 800;
+      animation: rgbColorChange 5s infinite linear;
+      display: inline-block;
+    }
+
+    .table { color: var(--tg-text-main); font-size: 0.88rem; margin-bottom: 0; }
+    .table th, .table td { vertical-align: middle; padding: 8px 10px; }
+    .table thead th { font-weight: 700; color: var(--tg-text-muted); background-color: var(--tg-input-bg); font-size: 0.82rem; white-space: nowrap; }
+
+    .ai-badge {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 0.7rem;
+      letter-spacing: 1px;
+      background: linear-gradient(45deg, #00f0ff, #7000ff);
+      color: #fff;
+      padding: 3px 6px;
+      border-radius: 6px;
+      display: inline-block;
+      white-space: nowrap;
+    }
+
+    .modal-content {
+      background-color: var(--tg-card-bg) !important;
+      color: var(--tg-text-main) !important;
+      border: 1px solid var(--tg-border) !important;
+      border-radius: 16px !important;
+    }
+
+    .share-preview-box {
+      background: #17212b;
+      color: #f5f5f5;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      border-radius: 10px;
+      padding: 12px;
+      font-size: 0.88rem;
+      white-space: pre-wrap;
+      line-height: 1.45;
+      border-left: 4px solid #2AABEE;
+    }
+
+    /* Horizontal Navbar Single Line Scroll Setup */
+    .header-scroll-container {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: nowrap;
+      overflow-x: auto;
+      white-space: nowrap;
+      padding-bottom: 2px;
+    }
+    .header-scroll-container::-webkit-scrollbar {
+      height: 3px;
+    }
+    .header-scroll-container::-webkit-scrollbar-thumb {
+      background: var(--tg-border);
+      border-radius: 3px;
+    }
+  </style>
 </head>
-
 <body oncontextmenu="return false;">
 
-<!-- LOADER -->
-<div id="loader">
-    <div class="loader-box">
-        <div class="spinner-ring"></div>
-        <div id="loaderText" class="fw-bold">Smart Processing...</div>
-    </div>
+<div id="loader" class="loading-overlay">
+  <div class="spinner-border text-primary" style="width: 3.5rem; height: 3.5rem;" role="status"></div>
 </div>
 
-<!-- AUTH -->
-<section id="authSection">
-
-    <div class="card auth-card">
-
-        <div class="text-center mb-4">
-
-            <svg class="auth-logo"
-                 viewBox="0 0 100 100"
-                 xmlns="http://www.w3.org/2000/svg">
-
-                <rect x="5" y="5" width="90" height="90"
-                      rx="22"
-                      fill="#0d6efd"/>
-
-                <text x="50"
-                      y="62"
-                      text-anchor="middle"
-                      fill="#fff"
-                      font-size="42"
-                      font-family="Arial"
-                      font-weight="bold">S</text>
-
-            </svg>
-
-            <h3 class="orbitron mt-3 mb-1">SAM ONLINE</h3>
-
-            <p class="text-secondary mb-0">
-                Complaint & Task Management System
-            </p>
-
+<div class="content-wrapper">
+  <!-- Auth Section -->
+  <div id="authSection" class="container">
+    <div class="card card-custom p-4 auth-container shadow-lg telegram-bubble">
+      <div class="text-center mb-4">
+        <div class="brand-logo-box mb-3">
+          <svg width="140" height="38" viewBox="0 0 300 80">
+            <path d="M 20 50 Q 30 15 60 25 Q 40 70 20 50 Z" fill="#e67e22"/>
+            <text x="35" y="55" font-family="sans-serif" font-weight="900" font-size="42" fill="#0077b5">Sam</text>
+            <circle cx="160" cy="40" r="16" fill="#0077b5" stroke="#ffffff" stroke-width="2"/>
+            <path d="M 140 45 Q 160 20 185 30" stroke="#e67e22" stroke-width="4" fill="none"/>
+            <text x="180" y="55" font-family="sans-serif" font-weight="bold" font-size="38" fill="#0077b5">nline</text>
+          </svg>
         </div>
+        <h5 class="fw-bold text-secondary">Task & Complaint Portal</h5>
+      </div>
+      <form id="authForm">
+        <div class="mb-3">
+          <label class="form-label fw-semibold">Email Address</label>
+          <input type="email" id="authEmail" class="form-control" placeholder="name@samonline.com" required>
+        </div>
+        <div class="mb-4">
+          <label class="form-label fw-semibold">Password</label>
+          <input type="password" id="authPassword" class="form-control" placeholder="••••••••" minlength="6" required>
+        </div>
+        <div id="authError" class="alert alert-danger py-2 small mb-3 text-center" style="display: none;"></div>
+        <button type="submit" class="btn btn-tg w-100 shadow-sm py-2">Sign In</button>
+      </form>
+    </div>
+  </div>
 
-        <form id="authForm">
-
-            <div class="mb-3">
-                <label class="form-label">
-                    <i class="fa-solid fa-envelope me-1"></i>
-                    Email Address
-                </label>
-
-                <input
-                    id="loginEmail"
-                    type="email"
-                    class="form-control"
-                    placeholder="admin@samonline.com"
-                    required>
+  <!-- Dashboard Section -->
+  <div id="dashboardSection" style="display: none;">
+    <div class="header-banner mb-3">
+      <div class="container-fluid px-md-3">
+        <!-- Single Horizontal Row Header -->
+        <div class="header-scroll-container">
+          
+          <!-- Left Controls: Brand Logo -> Badge -> Create Task -> Smart Search -->
+          <div class="d-flex align-items-center flex-nowrap gap-2 me-auto">
+            <div class="brand-logo-box">
+              <svg width="110" height="28" viewBox="0 0 300 80">
+                <path d="M 20 50 Q 30 15 60 25 Q 40 70 20 50 Z" fill="#e67e22"/>
+                <text x="35" y="55" font-family="sans-serif" font-weight="900" font-size="42" fill="#0077b5">Sam</text>
+                <circle cx="160" cy="40" r="16" fill="#0077b5" stroke="#ffffff" stroke-width="2"/>
+                <path d="M 140 45 Q 160 20 185 30" stroke="#e67e22" stroke-width="4" fill="none"/>
+                <text x="180" y="55" font-family="sans-serif" font-weight="bold" font-size="38" fill="#0077b5">nline</text>
+              </svg>
             </div>
+            <span id="themeIndicator" class="ai-badge me-2">AI MOOD</span>
 
-            <div class="mb-3">
-                <label class="form-label">
-                    <i class="fa-solid fa-lock me-1"></i>
-                    Password
-                </label>
-
-                <input
-                    id="loginPassword"
-                    type="password"
-                    class="form-control"
-                    placeholder="Password"
-                    required>
-            </div>
-
-            <div id="authError"
-                 class="alert alert-danger d-none py-2">
-            </div>
-
-            <button
-                type="submit"
-                class="btn btn-primary w-100 py-2">
-
-                <i class="fa-solid fa-right-to-bracket me-1"></i>
-                Login
-
+            <!-- Create Task Button (Immediately after Theme Status) -->
+            <button type="button" class="btn btn-tg shadow-sm px-3 flex-shrink-0" data-bs-toggle="modal" data-bs-target="#newTaskModal">
+              <i class="fa-solid fa-plus-circle me-1"></i> Create Task
             </button>
 
-        </form>
-
-    </div>
-
-</section>
-
-
-<!-- DASHBOARD -->
-<section id="dashboardSection"
-         class="dashboard-wrap d-none">
-
-    <!-- HEADER -->
-    <header class="main-header">
-
-        <div class="container-fluid px-3">
-
-            <div class="header-inner">
-
-                <!-- BRAND -->
-                <div class="brand-area">
-
-                    <svg class="logo-svg"
-                         viewBox="0 0 100 100"
-                         xmlns="http://www.w3.org/2000/svg">
-
-                        <rect x="5" y="5"
-                              width="90"
-                              height="90"
-                              rx="22"
-                              fill="#0d6efd"/>
-
-                        <text x="50"
-                              y="62"
-                              text-anchor="middle"
-                              fill="#fff"
-                              font-size="42"
-                              font-family="Arial"
-                              font-weight="bold">S</text>
-
-                    </svg>
-
-                    <div class="brand-title">
-                        SAM ONLINE
-                    </div>
-
-                    <span id="themeIndicator"
-                          class="ai-mood">
-                        AI MOOD
-                    </span>
-
-                </div>
-
-
-                <!-- HEADER TOOLS -->
-                <div class="header-tools">
-
-                    <!-- SEARCH -->
-                    <div class="position-relative">
-
-                        <input
-                            id="smartSearchInput"
-                            type="search"
-                            class="form-control header-search"
-                            placeholder="Smart Search..."
-                            oninput="_renderTasks()">
-
-                    </div>
-
-
-                    <!-- ZONE -->
-                    <select
-                        id="zoneFilter"
-                        class="form-select"
-                        onchange="_renderTasks()">
-
-                        <option value="">
-                            All Zones
-                        </option>
-
-                    </select>
-
-
-                    <!-- STATUS -->
-                    <select
-                        id="statusFilter"
-                        class="form-select"
-                        onchange="_renderTasks()">
-
-                        <option value="">
-                            All Status
-                        </option>
-
-                        <option value="Running">
-                            Running
-                        </option>
-
-                        <option value="Done">
-                            Done
-                        </option>
-
-                        <option value="Hold">
-                            Hold
-                        </option>
-
-                        <option value="Cancelled">
-                            Cancelled
-                        </option>
-
-                    </select>
-
-
-                    <!-- CREATE TASK -->
-                    <button
-                        class="btn btn-primary icon-btn"
-                        data-bs-toggle="modal"
-                        data-bs-target="#newTaskModal"
-                        title="Create Task"
-                        aria-label="Create Task">
-
-                        <i class="fa-solid fa-plus"></i>
-
-                    </button>
-
-
-                    <!-- THEME -->
-                    <button
-                        id="themeBtn"
-                        onclick="_xThm()"
-                        class="btn icon-btn theme-btn"
-                        title="Change Theme"
-                        aria-label="Change Theme">
-
-                        <i class="fa-solid fa-circle-half-stroke"></i>
-
-                    </button>
-
-
-                    <!-- USER + LOGOUT -->
-                    <div
-                        id="headerAuthControls"
-                        class="header-auth"
-                        style="display:none;">
-
-                        <span
-                            id="userDisplayEmail"
-                            class="user-email-pill"
-                            title="Logged in email">
-
-                            <i class="fa-solid fa-envelope"></i>
-
-                            <span
-                                id="userEmailText"
-                                class="user-email-text">
-                            </span>
-
-                        </span>
-
-                        <button
-                            onclick="_xOut()"
-                            class="btn icon-btn logout-btn"
-                            title="Logout"
-                            aria-label="Logout">
-
-                            <i class="fa-solid fa-power-off"></i>
-
-                        </button>
-
-                    </div>
-
-                </div>
-
+            <!-- Compact Search Engine Box (Placed at Left with Border) -->
+            <div class="input-group compact-search-box flex-shrink-0 border rounded-2 ms-1">
+              <span class="input-group-text bg-transparent border-end-0 text-muted p-1 ps-2"><i class="fa-solid fa-magnifying-glass small"></i></span>
+              <input type="text" id="smartSearchInput" class="form-control border-start-0 ps-1" placeholder="User ID/Phone..." onkeyup="_renderTasks()">
             </div>
+          </div>
+
+          <!-- Right Controls: Zones Filter -> Status Filter -> Theme Switch -->
+          <div class="d-flex align-items-center flex-nowrap gap-2 ms-2">
+            
+            <!-- Compact 60 Zones Filter -->
+            <select id="zoneFilter" class="form-select compact-select flex-shrink-0" onchange="_renderTasks()">
+              <option value="">All Zones</option>
+            </select>
+
+            <!-- Compact Status Filter -->
+            <select id="statusFilter" class="form-select compact-select flex-shrink-0" onchange="_renderTasks()">
+              <option value="">All Status</option>
+              <option value="🔄 Running">🔄 Running</option>
+              <option value="✅ Done">✅ Done</option>
+              <option value="⏸️ Hold">⏸️ Hold</option>
+            </select>
+
+            <!-- Change Theme Button -->
+            <button onclick="_xThm()" id="themeBtn" class="btn btn-outline-secondary rounded-circle p-0 flex-shrink-0 ms-1" style="width: 32px; height: 32px;" title="Change Theme">
+              <i id="themeIcon" class="fa-solid fa-robot text-info small"></i>
+            </button>
+          </div>
 
         </div>
+      </div>
+    </div>
 
-    </header>
-
-
-    <!-- MAIN -->
-    <main class="container-fluid py-4">
-
-        <!-- TITLE -->
-        <div class="d-flex justify-content-between align-items-center mb-4">
-
+    <div class="container-fluid px-md-3">
+      
+      <!-- 📊 THREE DASHBOARD COUNTER CARDS -->
+      <div class="row g-2 mb-3">
+        <div class="col-md-4">
+          <div class="stat-card">
             <div>
-                <h4 class="orbitron mb-1">
-                    SAM ONLINE DASHBOARD
-                </h4>
-
-                <div class="text-secondary small">
-                    Complaint & Task Automation System
-                </div>
+              <div class="text-muted small fw-semibold text-uppercase">Total Complaints</div>
+              <h4 class="fw-bold mb-0 text-primary" id="cntTotal">0</h4>
             </div>
+            <div class="stat-icon bg-primary bg-opacity-10 text-primary">
+              <i class="fa-solid fa-clipboard-list"></i>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="stat-card">
+            <div>
+              <div class="text-muted small fw-semibold text-uppercase">Running Complaints</div>
+              <h4 class="fw-bold mb-0 text-warning" id="cntRunning">0</h4>
+            </div>
+            <div class="stat-icon bg-warning bg-opacity-10 text-warning">
+              <i class="fa-solid fa-spinner fa-spin"></i>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="stat-card">
+            <div>
+              <div class="text-muted small fw-semibold text-uppercase">Completed / Done</div>
+              <h4 class="fw-bold mb-0 text-success" id="cntDone">0</h4>
+            </div>
+            <div class="stat-icon bg-success bg-opacity-10 text-success">
+              <i class="fa-solid fa-circle-check"></i>
+            </div>
+          </div>
+        </div>
+      </div>
 
-            <button
-                class="btn btn-primary"
-                data-bs-toggle="modal"
-                data-bs-target="#newTaskModal">
+      <!-- 📋 TASK & COMPLAINT TABLE -->
+      <div class="card card-custom p-3 mb-3 telegram-bubble">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+          <div class="fw-bold text-primary" style="font-size: 1rem;">
+            <i class="fa-solid fa-list-check me-2"></i> Active Complaints & Tasks List
+          </div>
+          <span class="badge bg-secondary rounded-pill" id="tableRecordCount">Showing 0 Items</span>
+        </div>
 
-                <i class="fa-solid fa-plus me-1"></i>
-                Create Task
+        <div class="table-responsive" style="max-height: 520px;">
+          <table class="table table-hover align-middle mb-0">
+            <thead class="sticky-top">
+              <tr>
+                <th>User ID</th>
+                <th>Status</th>
+                <th>Work Type</th>
+                <th>Area / Zone</th>
+                <th>Team</th>
+                <th>Address</th>
+                <th>Phone</th>
+                <th>Priority</th>
+                <th>Materials / Remarks</th>
+                <th class="text-end">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="taskTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
 
+<!-- ================= New Task Modal Window ================= -->
+<div class="modal fade" id="newTaskModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content shadow-lg p-3">
+      <div class="modal-header border-bottom pb-2">
+        <h5 class="modal-title fw-bold text-primary">
+          <i class="fa-solid fa-paper-plane me-2"></i> Create Task / Complaint
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form id="taskForm">
+          <div class="row g-3 mb-3">
+            <div class="col-md-4">
+              <label class="form-label fw-semibold">User ID</label>
+              <input type="text" id="userId" class="form-control" placeholder="e.g. SAM-102030" required>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label fw-semibold">Work Type</label>
+              <select id="workType" class="form-select" required>
+                <option value="New Line">New Line</option>
+                <option value="Complain / Repair">Complain / Repair</option>
+                <option value="Shifting">Shifting</option>
+                <option value="Maintenance">Maintenance</option>
+              </select>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label fw-semibold">Priority</label>
+              <select id="priority" class="form-select" required>
+                <option value="🟢 Normal">🟢 Normal</option>
+                <option value="🟡 High">🟡 High</option>
+                <option value="🔴 Urgent">🔴 Urgent</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="row g-3 mb-3">
+            <div class="col-md-6">
+              <label class="form-label fw-semibold">Area / Zone (60 Zones)</label>
+              <select id="areaZone" class="form-select" required></select>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label fw-semibold">Team Name</label>
+              <input type="text" id="teamName" class="form-control" placeholder="e.g. D-41-Dokkhinkhan" required>
+            </div>
+          </div>
+
+          <div class="row g-3 mb-3">
+            <div class="col-md-6">
+              <label class="form-label fw-semibold">Customer Address</label>
+              <input type="text" id="address" class="form-control" placeholder="e.g. Porosmoni 6A" required>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label fw-semibold">Phone Number</label>
+              <input type="tel" id="phone" class="form-control" placeholder="01700000000" required>
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Note / Package Detail</label>
+            <input type="text" id="note" class="form-control" placeholder="Pkg(500x1)month" required>
+          </div>
+
+          <!-- Modal Action Buttons -->
+          <div class="d-flex flex-wrap justify-content-end gap-2 mt-4">
+            <button type="button" class="btn btn-secondary px-3 py-2" data-bs-dismiss="modal">Cancel</button>
+            <button type="button" onclick="_submitTaskAndSendWA()" class="btn btn-wa px-3 py-2">
+              <i class="fa-brands fa-whatsapp me-1"></i> WhatsApp Direct
             </button>
-
-        </div>
-
-
-        <!-- KPI -->
-        <div class="row g-3 mb-4">
-
-            <div class="col-md-4">
-
-                <div class="card kpi-card">
-
-                    <div class="d-flex align-items-center gap-3">
-
-                        <div class="kpi-icon bg-primary bg-opacity-10 text-primary">
-                            <i class="fa-solid fa-list-check"></i>
-                        </div>
-
-                        <div>
-
-                            <div class="text-secondary small">
-                                Total Tasks
-                            </div>
-
-                            <div id="cntTotal"
-                                 class="kpi-number">
-                                0
-                            </div>
-
-                        </div>
-
-                    </div>
-
-                </div>
-
-            </div>
-
-
-            <div class="col-md-4">
-
-                <div class="card kpi-card">
-
-                    <div class="d-flex align-items-center gap-3">
-
-                        <div class="kpi-icon bg-warning bg-opacity-10 text-warning">
-                            <i class="fa-solid fa-spinner"></i>
-                        </div>
-
-                        <div>
-
-                            <div class="text-secondary small">
-                                Running
-                            </div>
-
-                            <div id="cntRunning"
-                                 class="kpi-number">
-                                0
-                            </div>
-
-                        </div>
-
-                    </div>
-
-                </div>
-
-            </div>
-
-
-            <div class="col-md-4">
-
-                <div class="card kpi-card">
-
-                    <div class="d-flex align-items-center gap-3">
-
-                        <div class="kpi-icon bg-success bg-opacity-10 text-success">
-                            <i class="fa-solid fa-circle-check"></i>
-                        </div>
-
-                        <div>
-
-                            <div class="text-secondary small">
-                                Completed
-                            </div>
-
-                            <div id="cntDone"
-                                 class="kpi-number">
-                                0
-                            </div>
-
-                        </div>
-
-                    </div>
-
-                </div>
-
-            </div>
-
-        </div>
-
-
-        <!-- TASK TABLE -->
-        <div class="card task-card">
-
-            <div class="p-3 border-bottom"
-                 style="border-color:var(--border)!important;">
-
-                <div class="d-flex justify-content-between align-items-center">
-
-                    <div class="fw-bold">
-                        <i class="fa-solid fa-table-list me-2 text-primary"></i>
-                        Task Management
-                    </div>
-
-                    <div class="small text-secondary">
-                        Real-time Firebase Data
-                    </div>
-
-                </div>
-
-            </div>
-
-
-            <div class="task-table-wrap">
-
-                <table class="table table-hover task-table">
-
-                    <thead>
-
-                        <tr>
-
-                            <th>User ID</th>
-                            <th>Status</th>
-                            <th>Work Type</th>
-                            <th>Area / Zone</th>
-                            <th>Team</th>
-                            <th>Address</th>
-                            <th>Phone</th>
-                            <th>Priority</th>
-                            <th>Materials / Remarks</th>
-                            <th>Actions</th>
-
-                        </tr>
-
-                    </thead>
-
-                    <tbody id="taskTableBody">
-
-                    </tbody>
-
-                </table>
-
-            </div>
-
-        </div>
-
-    </main>
-
-
-    <!-- FOOTER -->
-    <footer class="footer">
-
-        <div>
-            Sam Online Automation System | Safe & Secure Platform.
-        </div>
-
-        <div class="mt-1">
-            Developed by
-            <span class="antu-name">
-                Antu
-            </span>
-        </div>
-
-    </footer>
-
-</section>
-
-
-<!-- ================= NEW TASK MODAL ================= -->
-
-<div
-    class="modal fade"
-    id="newTaskModal"
-    tabindex="-1">
-
-    <div class="modal-dialog modal-lg modal-dialog-centered">
-
-        <div class="modal-content">
-
-            <div class="modal-header">
-
-                <h5 class="modal-title orbitron">
-
-                    <i class="fa-solid fa-square-plus text-primary me-2"></i>
-                    Create New Task
-
-                </h5>
-
-                <button
-                    type="button"
-                    class="btn-close"
-                    data-bs-dismiss="modal">
-                </button>
-
-            </div>
-
-
-            <form id="taskForm"
-                  onsubmit="_handleFormSubmit(event)">
-
-                <div class="modal-body">
-
-                    <div class="row g-3">
-
-                        <!-- USER ID -->
-                        <div class="col-md-6">
-
-                            <label class="form-label">
-                                User ID
-                            </label>
-
-                            <input
-                                id="userId"
-                                class="form-control"
-                                placeholder="Customer/User ID"
-                                required>
-
-                        </div>
-
-
-                        <!-- WORK TYPE -->
-                        <div class="col-md-6">
-
-                            <label class="form-label">
-                                Work Type
-                            </label>
-
-                            <select
-                                id="workType"
-                                class="form-select"
-                                required>
-
-                                <option value="">
-                                    Select Work Type
-                                </option>
-
-                                <option>
-                                    New Line
-                                </option>
-
-                                <option>
-                                    Complain / Repair
-                                </option>
-
-                                <option>
-                                    Shifting
-                                </option>
-
-                                <option>
-                                    Maintenance
-                                </option>
-
-                            </select>
-
-                        </div>
-
-
-                        <!-- PRIORITY -->
-                        <div class="col-md-6">
-
-                            <label class="form-label">
-                                Priority
-                            </label>
-
-                            <select
-                                id="priority"
-                                class="form-select"
-                                required>
-
-                                <option value="🟢 Normal">
-                                    🟢 Normal
-                                </option>
-
-                                <option value="🟡 High">
-                                    🟡 High
-                                </option>
-
-                                <option value="🔴 Urgent">
-                                    🔴 Urgent
-                                </option>
-
-                            </select>
-
-                        </div>
-
-
-                        <!-- ZONE -->
-                        <div class="col-md-6">
-
-                            <label class="form-label">
-                                Area / Zone
-                            </label>
-
-                            <select
-                                id="areaZone"
-                                class="form-select"
-                                required>
-
-                                <option value="">
-                                    Select Zone
-                                </option>
-
-                            </select>
-
-                        </div>
-
-
-                        <!-- TEAM -->
-                        <div class="col-md-6">
-
-                            <label class="form-label">
-                                Assigned Team
-                            </label>
-
-                            <input
-                                id="teamName"
-                                class="form-control"
-                                placeholder="Technician / Team">
-
-                        </div>
-
-
-                        <!-- PHONE -->
-                        <div class="col-md-6">
-
-                            <label class="form-label">
-                                Customer Phone
-                            </label>
-
-                            <input
-                                id="phone"
-                                type="tel"
-                                class="form-control"
-                                placeholder="01XXXXXXXXX">
-
-                        </div>
-
-
-                        <!-- ADDRESS -->
-                        <div class="col-12">
-
-                            <label class="form-label">
-                                Address
-                            </label>
-
-                            <textarea
-                                id="address"
-                                class="form-control"
-                                rows="2"
-                                placeholder="Customer address"></textarea>
-
-                        </div>
-
-
-                        <!-- NOTE -->
-                        <div class="col-12">
-
-                            <label class="form-label">
-                                Complaint / Remarks
-                            </label>
-
-                            <textarea
-                                id="note"
-                                class="form-control"
-                                rows="3"
-                                placeholder="Problem details / remarks"></textarea>
-
-                        </div>
-
-                    </div>
-
-                </div>
-
-
-                <div class="modal-footer">
-
-                    <button
-                        type="button"
-                        class="btn btn-secondary"
-                        data-bs-dismiss="modal">
-
-                        Cancel
-
-                    </button>
-
-
-                    <!-- WHATSAPP ICON ONLY -->
-                    <button
-                        type="button"
-                        onclick="_submitTaskAndSendWA()"
-                        class="btn btn-wa icon-btn"
-                        title="WhatsApp Group-এ Task পাঠান"
-                        aria-label="WhatsApp Group-এ Task পাঠান">
-
-                        <i class="fa-brands fa-whatsapp fs-5"></i>
-
-                    </button>
-
-
-                    <!-- STANDARD CREATE -->
-                    <button
-                        type="submit"
-                        class="btn btn-primary">
-
-                        <i class="fa-solid fa-paper-plane me-1"></i>
-
-                        Create & Dispatch
-
-                    </button>
-
-                </div>
-
-            </form>
-
-        </div>
-
+            <button type="submit" class="btn btn-tg px-4 py-2">
+              <i class="fa-solid fa-paper-plane me-1"></i> Create & Dispatch
+            </button>
+          </div>
+        </form>
+      </div>
     </div>
-
+  </div>
 </div>
 
-
-<!-- ================= SHARE MODAL ================= -->
-
-<div
-    class="modal fade"
-    id="shareModal"
-    tabindex="-1">
-
-    <div class="modal-dialog modal-lg modal-dialog-centered">
-
-        <div class="modal-content">
-
-            <div class="modal-header">
-
-                <h5 class="modal-title orbitron">
-
-                    <i class="fa-solid fa-share-nodes text-primary me-2"></i>
-                    Task Dispatch
-
-                </h5>
-
-                <button
-                    type="button"
-                    class="btn-close"
-                    data-bs-dismiss="modal">
-                </button>
-
-            </div>
-
-
-            <div class="modal-body">
-
-                <div id="sharePreviewText"
-                     class="share-preview">
-                </div>
-
-            </div>
-
-
-            <div class="modal-footer">
-
-                <button
-                    type="button"
-                    onclick="_sendToTelegramApp()"
-                    class="btn btn-primary">
-
-                    <i class="fa-brands fa-telegram me-1"></i>
-                    Telegram
-
-                </button>
-
-
-                <!-- WHATSAPP ICON ONLY -->
-                <button
-                    type="button"
-                    onclick="_sendToWhatsAppApp()"
-                    class="btn btn-wa icon-btn"
-                    title="WhatsApp Group-এ পাঠান"
-                    aria-label="WhatsApp Group-এ পাঠান">
-
-                    <i class="fa-brands fa-whatsapp fs-5"></i>
-
-                </button>
-
-
-                <button
-                    type="button"
-                    onclick="_copyShareText()"
-                    class="btn btn-secondary">
-
-                    <i class="fa-solid fa-copy me-1"></i>
-                    Copy
-
-                </button>
-
-            </div>
-
+<!-- Share & Preview Modal -->
+<div class="modal fade" id="shareModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content shadow-lg p-3">
+      <div class="modal-header border-bottom pb-2">
+        <h5 class="modal-title fw-bold text-primary">
+          <i class="fa-solid fa-share-nodes me-2"></i> Task Dispatch & Share Format
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div id="sharePreviewText" class="share-preview-box"></div>
+        <div class="row g-2 mt-3">
+          <div class="col-6">
+            <button onclick="_sendToTelegramApp()" class="btn btn-tg w-100 py-2">
+              <i class="fa-brands fa-telegram me-1"></i> Telegram
+            </button>
+          </div>
+          <div class="col-6">
+            <button onclick="_sendToWhatsAppApp()" class="btn btn-wa w-100 py-2">
+              <i class="fa-brands fa-whatsapp me-1"></i> Web WhatsApp
+            </button>
+          </div>
+          <div class="col-12">
+            <button onclick="_copyShareText()" class="btn btn-outline-secondary w-100 py-1 btn-sm mt-1">
+              <i class="fa-solid fa-copy me-1"></i> Copy Text Format
+            </button>
+          </div>
         </div>
-
+      </div>
     </div>
-
+  </div>
 </div>
 
-
-<!-- ================= STATUS MODAL ================= -->
-
-<div
-    class="modal fade"
-    id="statusChangeModal"
-    tabindex="-1">
-
-    <div class="modal-dialog modal-dialog-centered">
-
-        <div class="modal-content">
-
-            <div class="modal-header">
-
-                <h5 class="modal-title orbitron">
-                    <i class="fa-solid fa-pen-to-square me-2"></i>
-                    Update Task Status
-                </h5>
-
-                <button
-                    type="button"
-                    class="btn-close"
-                    data-bs-dismiss="modal">
-                </button>
-
-            </div>
-
-
-            <div class="modal-body">
-
-                <input
-                    type="hidden"
-                    id="modalTaskDbKey">
-
-
-                <div class="mb-3">
-
-                    <label class="form-label">
-                        Status
-                    </label>
-
-                    <select
-                        id="modalStatusSelect"
-                        class="form-select">
-
-                        <option value="🔄 Running">
-                            🔄 Running
-                        </option>
-
-                        <option value="✅ Done">
-                            ✅ Done
-                        </option>
-
-                        <option value="⏸️ Hold">
-                            ⏸️ Hold
-                        </option>
-
-                        <option value="❌ Cancelled">
-                            ❌ Cancelled
-                        </option>
-
-                    </select>
-
-                </div>
-
-
-                <div>
-
-                    <label class="form-label">
-                        Materials / Remarks
-                    </label>
-
-                    <textarea
-                        id="modalMaterialsInput"
-                        class="form-control"
-                        rows="4"
-                        placeholder="Used materials / work remarks"></textarea>
-
-                </div>
-
-            </div>
-
-
-            <div class="modal-footer">
-
-                <button
-                    type="button"
-                    class="btn btn-secondary"
-                    data-bs-dismiss="modal">
-
-                    Cancel
-
-                </button>
-
-                <button
-                    type="button"
-                    onclick="_saveManualStatusUpdate()"
-                    class="btn btn-primary">
-
-                    <i class="fa-solid fa-floppy-disk me-1"></i>
-                    Save Update
-
-                </button>
-
-            </div>
-
+<!-- Manual Status Change Modal -->
+<div class="modal fade" id="statusChangeModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content shadow-lg p-3">
+      <div class="modal-header border-bottom pb-2">
+        <h5 class="modal-title fw-bold text-primary">
+          <i class="fa-solid fa-pen-to-square me-2"></i> Manual Status Update
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="modalTaskDbKey">
+        <div class="mb-3">
+          <label class="form-label fw-semibold">Select New Status</label>
+          <select id="modalStatusSelect" class="form-select">
+            <option value="🔄 Running">🔄 Running</option>
+            <option value="✅ Done">✅ Done</option>
+            <option value="⏸️ Hold">⏸️ Hold</option>
+            <option value="❌ Cancelled">❌ Cancelled</option>
+          </select>
         </div>
-
+        <div class="mb-3">
+          <label class="form-label fw-semibold">Materials / Comments / Remarks</label>
+          <textarea id="modalMaterialsInput" class="form-control" rows="3" placeholder="e.g. Fiber Drop Cable 20m, ONU changed, or customer delayed..."></textarea>
+        </div>
+        <div class="d-flex justify-content-end gap-2 mt-3">
+          <button type="button" class="btn btn-secondary py-1 px-3" data-bs-dismiss="modal">Close</button>
+          <button onclick="_saveManualStatusUpdate()" class="btn btn-tg py-1 px-3">
+            <i class="fa-solid fa-floppy-disk me-1"></i> Update Status
+          </button>
+        </div>
+      </div>
     </div>
-
+  </div>
 </div>
 
+<!-- App Footer (Centered Alignment Implemented) -->
+<footer class="app-footer">
+  <div class="container-fluid px-md-3">
+    <div class="row align-items-center justify-content-center text-center g-2">
+      <!-- Centered Information Text -->
+      <div class="col-12">
+        <p class="mb-0 fw-semibold d-inline-block me-2">Sam Online Automation System | Safe & Secure Platform.</p>
+        <small class="text-muted d-inline-block">Developed by <strong class="animated-author">Antu</strong></small>
+      </div>
+      <!-- User Info & Logout Button -->
+      <div class="col-12 mt-2" id="footerAuthControls" style="display: none;">
+        <div class="d-inline-flex align-items-center justify-content-center gap-2">
+          <span id="userDisplayEmail" class="badge bg-body-tertiary text-body border py-2 px-3 rounded-pill fw-normal small"></span>
+          <button onclick="_xOut()" class="btn btn-outline-danger btn-sm fw-semibold rounded-2 px-2 py-1" title="Logout">
+            <i class="fa-solid fa-power-off me-1"></i> Logout
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</footer>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
+<!-- Firebase App & Firebase Auth / Database Modular Imports -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+  import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+  import { getDatabase, ref, set, push, onValue, update } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
-<!-- ================= FIREBASE ================= -->
-
-<script type="module" id="ph1y73">
-
-import {
-    initializeApp
-} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-
-import {
-    getAuth,
-    signInWithEmailAndPassword,
-    onAuthStateChanged,
-    signOut
-} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-
-import {
-    getDatabase,
-    ref,
-    set,
-    push,
-    onValue,
-    update
-} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
-
-
-/* ================= FIREBASE CONFIG ================= */
-
-const firebaseConfig = {
-
+  // Firebase Configuration (Samonline-53e0f)
+  const firebaseConfig = {
     apiKey: "AIzaSyA0xdc-qo2YYvOsOPm_3cT9hwT5OKDz4tw",
+    authDomain: "samonline-53e0f.firebaseapp.com",
+    projectId: "samonline-53e0f",
+    storageBucket: "samonline-53e0f.firebasestorage.app",
+    messagingSenderId: "457360957712",
+    appId: "1:457360957712:web:d62d36116620c5d0d10595",
+    measurementId: "G-0784LFJPCY"
+  };
 
-    authDomain:
-        "samonline-53e0f.firebaseapp.com",
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const db = getDatabase(app);
 
-    projectId:
-        "samonline-53e0f",
+  let _usr = null;
+  let taskCache = [];
+  let currentPreviewText = "";
+  let currentPhone = "";
 
-    storageBucket:
-        "samonline-53e0f.firebasestorage.app",
+  const _ldr = (s) => document.getElementById('loader').style.display = s ? 'flex' : 'none';
 
-    messagingSenderId:
-        "457360957712",
-
-    appId:
-        "1:457360957712:web:d62d36116620c5d0d10595",
-
-    measurementId:
-        "G-0784LFJPCY"
-
-};
-
-
-/* ================= INITIALIZE ================= */
-
-const app = initializeApp(firebaseConfig);
-
-const auth = getAuth(app);
-
-const db = getDatabase(app);
-
-
-/* ================= GLOBAL ================= */
-
-let _usr = null;
-
-let taskCache = [];
-
-let currentPreviewText = "";
-
-let currentPhone = "";
-
-
-/* ================= LOADER ================= */
-
-function _ldr(show, text="Smart Processing..."){
-
-    const loader =
-        document.getElementById("loader");
-
-    const loaderText =
-        document.getElementById("loaderText");
-
-    if(loaderText){
-        loaderText.innerText = text;
+  // Populate 60 Zones (Zone-D1 to Zone-D60)
+  function initZones() {
+    const zoneSelect = document.getElementById('areaZone');
+    const filterSelect = document.getElementById('zoneFilter');
+    zoneSelect.innerHTML = '';
+    
+    for (let i = 1; i <= 60; i++) {
+      const zVal = `Zone-D${i}`;
+      zoneSelect.innerHTML += `<option value="${zVal}">${zVal}</option>`;
+      filterSelect.innerHTML += `<option value="${zVal}">${zVal}</option>`;
     }
+  }
 
-    if(loader){
-        loader.style.display =
-            show ? "flex" : "none";
+  // Theme Controls
+  window._xThm = function() {
+    const ct = document.documentElement.getAttribute('data-bs-theme') || 'light';
+    let nt = ct === 'light' ? 'dark' : (ct === 'dark' ? 'ai' : 'light');
+    _setThm(nt);
+  }
+
+  function _setThm(t) {
+    document.documentElement.setAttribute('data-bs-theme', t);
+    localStorage.setItem('appTheme', t);
+    const ic = document.getElementById('themeIcon'), bd = document.getElementById('themeIndicator');
+    if (t === 'light') { ic.className = 'fa-solid fa-sun text-warning'; if(bd) bd.innerText = "LIGHT MOOD"; }
+    else if (t === 'dark') { ic.className = 'fa-solid fa-moon text-primary'; if(bd) bd.innerText = "DARK MOOD"; }
+    else { ic.className = 'fa-solid fa-robot text-info'; if(bd) bd.innerText = "AI CYBER"; }
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    _setThm(localStorage.getItem('appTheme') || 'ai');
+    initZones();
+  });
+
+  // Auth State Listener
+  onAuthStateChanged(auth, (u) => {
+    _ldr(true);
+    if (u) {
+      _usr = u;
+      document.getElementById('authSection').style.display = 'none';
+      document.getElementById('dashboardSection').style.display = 'block';
+      document.getElementById('footerAuthControls').style.display = 'block';
+      document.getElementById('userDisplayEmail').innerText = _usr.email;
+      _fetchTasks();
+    } else {
+      _usr = null;
+      document.getElementById('authSection').style.display = 'block';
+      document.getElementById('dashboardSection').style.display = 'none';
+      document.getElementById('footerAuthControls').style.display = 'none';
     }
-
-}
-
-
-/* ================= ZONES ================= */
-
-function initZones(){
-
-    const area =
-        document.getElementById("areaZone");
-
-    const filter =
-        document.getElementById("zoneFilter");
-
-    if(!area || !filter) return;
-
-
-    for(let i=1; i<=60; i++){
-
-        const zone =
-            `Zone-D${i}`;
-
-
-        const option =
-            document.createElement("option");
-
-        option.value = zone;
-
-        option.textContent = zone;
-
-        area.appendChild(option);
-
-
-        const filterOption =
-            document.createElement("option");
-
-        filterOption.value = zone;
-
-        filterOption.textContent = zone;
-
-        filter.appendChild(filterOption);
-
-    }
-
-}
-
-
-/* ================= THEME ================= */
-
-function _setThm(theme){
-
-    document.documentElement
-        .setAttribute(
-            "data-bs-theme",
-            theme
-        );
-
-    localStorage.setItem(
-        "appTheme",
-        theme
-    );
-
-
-    const indicator =
-        document.getElementById(
-            "themeIndicator"
-        );
-
-    if(indicator){
-
-        if(theme==="light"){
-            indicator.innerText =
-                "LIGHT MOOD";
-        }
-
-        else if(theme==="dark"){
-            indicator.innerText =
-                "DARK MOOD";
-        }
-
-        else{
-            indicator.innerText =
-                "AI MOOD";
-        }
-
-    }
-
-}
-
-
-function _xThm(){
-
-    const current =
-        document.documentElement
-            .getAttribute("data-bs-theme");
-
-
-    let next =
-        "light";
-
-
-    if(current==="light"){
-        next="dark";
-    }
-
-    else if(current==="dark"){
-        next="ai";
-    }
-
-    else{
-        next="light";
-    }
-
-
-    _setThm(next);
-
-}
-
-
-/* ================= AUTH STATE ================= */
-
-onAuthStateChanged(
-    auth,
-    (u)=>{
-
-        const authSection =
-            document.getElementById(
-                "authSection"
-            );
-
-        const dashboardSection =
-            document.getElementById(
-                "dashboardSection"
-            );
-
-        const headerAuth =
-            document.getElementById(
-                "headerAuthControls"
-            );
-
-        const emailText =
-            document.getElementById(
-                "userEmailText"
-            );
-
-
-        if(u){
-
-            _usr = u;
-
-
-            authSection.classList
-                .add("d-none");
-
-            dashboardSection.classList
-                .remove("d-none");
-
-
-            if(headerAuth){
-
-                headerAuth.style.display =
-                    "flex";
-
-            }
-
-
-            if(emailText){
-
-                emailText.innerText =
-                    u.email || "";
-
-            }
-
-
-            _fetchTasks();
-
-        }
-
-        else{
-
-            _usr = null;
-
-            authSection.classList
-                .remove("d-none");
-
-            dashboardSection.classList
-                .add("d-none");
-
-
-            if(headerAuth){
-
-                headerAuth.style.display =
-                    "none";
-
-            }
-
-        }
-
-    }
-);
-
-
-/* ================= LOGIN ================= */
-
-document
-    .getElementById("authForm")
-    .addEventListener(
-        "submit",
-        async function(e){
-
-            e.preventDefault();
-
-            const email =
-                document
-                    .getElementById("loginEmail")
-                    .value
-                    .trim();
-
-            const password =
-                document
-                    .getElementById("loginPassword")
-                    .value;
-
-            const errorBox =
-                document
-                    .getElementById("authError");
-
-
-            errorBox.classList
-                .add("d-none");
-
-
-            _ldr(
-                true,
-                "Logging in..."
-            );
-
-
-            try{
-
-                await signInWithEmailAndPassword(
-                    auth,
-                    email,
-                    password
-                );
-
-            }
-
-            catch(error){
-
-                console.error(error);
-
-                errorBox.innerText =
-                    "Login failed: " +
-                    (
-                        error.message ||
-                        "Invalid email or password."
-                    );
-
-                errorBox.classList
-                    .remove("d-none");
-
-            }
-
-            finally{
-
-                _ldr(false);
-
-            }
-
-        }
-    );
-
-
-/* ================= LOGOUT ================= */
-
-window._xOut =
-async function(){
-
-    _ldr(
-        true,
-        "Logging out..."
-    );
-
-    try{
-
-        await signOut(auth);
-
-    }
-
-    catch(error){
-
-        console.error(error);
-
-    }
-
-    finally{
-
-        _ldr(false);
-
-    }
-
-};
-
-
-/* ================= SAVE TASK DATA ================= */
-
-async function _saveTaskData(){
-
-    if(!_usr){
-
-        alert(
-            "Please login first."
-        );
-
-        return null;
-
-    }
-
-
-    const uId =
-        document
-            .getElementById("userId")
-            .value
-            .trim();
-
-    const wType =
-        document
-            .getElementById("workType")
-            .value;
-
-    const prio =
-        document
-            .getElementById("priority")
-            .value;
-
-    const zone =
-        document
-            .getElementById("areaZone")
-            .value;
-
-    const team =
-        document
-            .getElementById("teamName")
-            .value
-            .trim();
-
-    const addr =
-        document
-            .getElementById("address")
-            .value
-            .trim();
-
-    const ph =
-        document
-            .getElementById("phone")
-            .value
-            .trim();
-
-    const nt =
-        document
-            .getElementById("note")
-            .value
-            .trim();
-
-
-    if(!uId || !wType || !zone){
-
-        alert(
-            "User ID, Work Type and Zone are required."
-        );
-
-        return null;
-
-    }
-
-
-    const due =
-        new Date(
-            Date.now() + 2*60*60*1000
-        );
-
-
-    const formattedDue =
-        due.toLocaleString(
-            "en-BD",
-            {
-                dateStyle:"short",
-                timeStyle:"short"
-            }
-        );
-
+    _ldr(false);
+  });
+
+  // Login Handler
+  document.getElementById('authForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    _ldr(true);
+    try {
+      await signInWithEmailAndPassword(auth, document.getElementById('authEmail').value, document.getElementById('authPassword').value);
+    } catch (err) {
+      const errEl = document.getElementById('authError');
+      errEl.style.display = 'block';
+      errEl.innerText = "Login failed! Please check your email and password.";
+    } finally { _ldr(false); }
+  });
+
+  window._xOut = function() { signOut(auth); }
+
+  // Save Task Logic
+  async function _saveTaskData() {
+    if (!_usr) return null;
+
+    const uId = document.getElementById('userId').value.trim();
+    const wType = document.getElementById('workType').value;
+    const prio = document.getElementById('priority').value;
+    const zone = document.getElementById('areaZone').value;
+    const team = document.getElementById('teamName').value.trim();
+    const addr = document.getElementById('address').value.trim();
+    const ph = document.getElementById('phone').value.trim();
+    const nt = document.getElementById('note').value.trim();
+
+    const now = new Date();
+    const dueTime = new Date(now.getTime() + 2 * 60 * 60 * 1000);
+    const formattedDue = dueTime.toLocaleDateString('en-GB').replace(/\//g, '-') + ' ' + dueTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
     const newTask = {
-
-        userId: uId,
-
-        status:
-            "🔄 Running",
-
-        workType: wType,
-
-        note: nt,
-
-        area: zone,
-
-        team: team,
-
-        address: addr,
-
-        phone: ph,
-
-        priority: prio,
-
-        materials: "",
-
-        reminder:
-            "1 of 4",
-
-        reminderDue:
-            formattedDue,
-
-        createdBy:
-            _usr.email,
-
-        timestamp:
-            Date.now()
-
+      userId: uId,
+      status: "🔄 Running",
+      workType: wType,
+      note: nt,
+      area: zone,
+      team: team,
+      address: addr,
+      phone: ph,
+      priority: prio,
+      materials: "",
+      reminder: "1 of 4",
+      reminderDue: formattedDue,
+      createdBy: _usr.email,
+      timestamp: Date.now()
     };
 
+    const recordKey = uId.replace(/[.#$[\]]/g, "_") + "_" + Date.now();
+    await set(ref(db, 'samonline_tasks/' + recordKey), newTask);
+    return newTask;
+  }
 
-    const safeUserId =
-        uId
-            .replace(
-                /[^a-zA-Z0-9_-]/g,
-                "_"
-            );
+  // Submit via Standard Create & Dispatch Button
+  document.getElementById('taskForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    _ldr(true);
+    try {
+      const newTask = await _saveTaskData();
+      if (newTask) {
+        document.getElementById('taskForm').reset();
+        const modalInstance = bootstrap.Modal.getInstance(document.getElementById('newTaskModal'));
+        if (modalInstance) modalInstance.hide();
+        _showShareModal(newTask);
+      }
+    } catch (err) {
+      alert("Error saving task: " + err.message);
+    } finally { _ldr(false); }
+  });
 
-
-    const recordKey =
-        safeUserId +
-        "_" +
-        Date.now();
-
-
-    _ldr(
-        true,
-        "Saving task..."
-    );
-
-
-    try{
-
-        await set(
-            ref(
-                db,
-                "samonline_tasks/" +
-                recordKey
-            ),
-            newTask
-        );
-
-
-        newTask._dbKey =
-            recordKey;
-
-
-        return newTask;
-
+  // Submit via WhatsApp Direct Button Fixed Logic
+  window._submitTaskAndSendWA = async function() {
+    const form = document.getElementById('taskForm');
+    if (!form.checkValidity()) {
+      form.reportValidity();
+      return;
     }
 
-    catch(error){
+    _ldr(true);
+    try {
+      const newTask = await _saveTaskData();
+      if (newTask) {
+        form.reset();
+        const modalEl = document.getElementById('newTaskModal');
+        const modalInstance = bootstrap.Modal.getInstance(modalEl);
+        if (modalInstance) modalInstance.hide();
+        
+        // WhatsApp Redirect Engine
+        const text = buildDispatchFormat(newTask);
+        let cleanPhone = (newTask.phone || "").replace(/[^0-9]/g, '');
+        if (cleanPhone.startsWith('0')) cleanPhone = '88' + cleanPhone;
+        
+        const waUrl = cleanPhone 
+          ? `https://web.whatsapp.com/send?phone=${cleanPhone}&text=${encodeURIComponent(text)}`
+          : `https://web.whatsapp.com/send?text=${encodeURIComponent(text)}`;
+        
+        window.open(waUrl, '_blank');
+      }
+    } catch (err) {
+      alert("Error saving task for WhatsApp: " + err.message);
+    } finally { _ldr(false); }
+  };
 
-        console.error(error);
+  // Fetch Tasks Realtime
+  function _fetchTasks() {
+    onValue(ref(db, 'samonline_tasks'), (snapshot) => {
+      taskCache = [];
+      const val = snapshot.val();
+      if (val) {
+        Object.keys(val).forEach(k => {
+          const item = val[k];
+          item._dbKey = k;
+          taskCache.push(item);
+        });
+        taskCache.sort((a, b) => b.timestamp - a.timestamp);
+      }
+      _renderTasks();
+    });
+  }
 
-        alert(
-            "Task save failed.\n\n" +
-            (
-                error.message ||
-                "Unknown Firebase error."
-            )
-        );
+  // Render Engine
+  window._renderTasks = function() {
+    const tb = document.getElementById('taskTableBody');
+    const zFilter = document.getElementById('zoneFilter').value;
+    const sFilter = document.getElementById('statusFilter').value;
+    const sQuery = document.getElementById('smartSearchInput').value.trim().toLowerCase();
 
-        return null;
+    tb.innerHTML = '';
 
+    const filtered = taskCache.filter(t => {
+      const matchZone = zFilter ? (t.area === zFilter) : true;
+      const matchStatus = sFilter ? (t.status === sFilter) : true;
+      const matchSearch = sQuery ? (
+        (t.userId && t.userId.toLowerCase().includes(sQuery)) ||
+        (t.phone && t.phone.toLowerCase().includes(sQuery)) ||
+        (t.area && t.area.toLowerCase().includes(sQuery))
+      ) : true;
+
+      return matchZone && matchStatus && matchSearch;
+    });
+
+    const totalCount = filtered.length;
+    const runningCount = filtered.filter(t => t.status && t.status.includes('Running')).length;
+    const doneCount = filtered.filter(t => t.status && (t.status.includes('Done') || t.status.includes('OK'))).length;
+
+    document.getElementById('cntTotal').innerText = totalCount;
+    document.getElementById('cntRunning').innerText = runningCount;
+    document.getElementById('cntDone').innerText = doneCount;
+    document.getElementById('tableRecordCount').innerText = `Showing ${filtered.length} Items`;
+
+    if (filtered.length === 0) {
+      tb.innerHTML = `<tr><td colspan="10" class="text-center text-muted py-4">No matching complaints or tasks found</td></tr>`;
+      return;
     }
 
-    finally{
-
-        _ldr(false);
-
-    }
-
-}
-
-
-/* ================= NORMAL FORM SUBMIT ================= */
-
-window._handleFormSubmit =
-async function(event){
-
-    event.preventDefault();
-
-
-    const newTask =
-        await _saveTaskData();
-
-
-    if(!newTask){
-        return;
-    }
-
-
-    document
-        .getElementById("taskForm")
-        .reset();
-
-
-    bootstrap.Modal
-        .getOrCreateInstance(
-            document.getElementById(
-                "newTaskModal"
-            )
-        )
-        .hide();
-
-
-    _showShareModal(newTask);
-
-};
-
-
-/* ================= WHATSAPP URL ================= */
-
-/*
-    Important:
-    This intentionally does NOT use customer phone.
-
-    It creates:
-    https://wa.me/?text=...
-
-    WhatsApp then lets the user choose
-    the required contact/group.
-*/
-
-function _buildWhatsAppUrl(text){
-
-    return (
-        "https://wa.me/?text=" +
-        encodeURIComponent(text)
-    );
-
-}
-
-
-/* ================= WHATSAPP DIRECT FROM CREATE TASK ================= */
-
-window._submitTaskAndSendWA =
-async function(){
-
-    const form =
-        document.getElementById(
-            "taskForm"
-        );
-
-
-    if(!form.checkValidity()){
-
-        form.reportValidity();
-
-        return;
-
-    }
-
-
-    /*
-       Open the blank tab immediately
-       while still inside the user's click.
-       This prevents popup blockers from
-       blocking WhatsApp after Firebase save.
-    */
-
-    let waWindow = null;
-
-
-    try{
-
-        waWindow =
-            window.open(
-                "about:blank",
-                "_blank"
-            );
-
-    }
-
-    catch(error){
-
-        console.warn(
-            "Popup opening failed:",
-            error
-        );
-
-    }
-
-
-    const newTask =
-        await _saveTaskData();
-
-
-    if(!newTask){
-
-        if(
-            waWindow &&
-            !waWindow.closed
-        ){
-
-            waWindow.close();
-
-        }
-
-        return;
-
-    }
-
-
-    document
-        .getElementById("taskForm")
-        .reset();
-
-
-    bootstrap.Modal
-        .getOrCreateInstance(
-            document.getElementById(
-                "newTaskModal"
-            )
-        )
-        .hide();
-
-
-    const text =
-        buildDispatchFormat(
-            newTask
-        );
-
-
-    currentPreviewText =
-        text;
-
-    currentPhone =
-        newTask.phone || "";
-
-
-    const waUrl =
-        _buildWhatsAppUrl(
-            text
-        );
-
-
-    /*
-       Send to WhatsApp share screen.
-       User selects the desired group
-       and presses Send.
-    */
-
-    if(
-        waWindow &&
-        !waWindow.closed
-    ){
-
-        waWindow.location.href =
-            waUrl;
-
-    }
-
-    else{
-
-        /*
-           Popup blocked fallback:
-           show Share Modal so the user
-           can press the WhatsApp icon.
-        */
-
-        _showShareModal(
-            newTask
-        );
-
-    }
-
-};
-
-
-/* ================= DISPATCH FORMAT ================= */
-
-function buildDispatchFormat(t){
-
-    return `
-🔔 SAM ONLINE TASK REMINDER
-
+    filtered.forEach(t => {
+      const tr = document.createElement('tr');
+      
+      let badgeClass = "bg-warning text-dark";
+      if (t.status && (t.status.includes('Done') || t.status.includes('OK'))) badgeClass = "bg-success text-white";
+      else if (t.status && t.status.includes('Hold')) badgeClass = "bg-danger text-white";
+      else if (t.status && t.status.includes('Cancelled')) badgeClass = "bg-secondary text-white";
+
+      tr.innerHTML = `
+        <td class="fw-bold text-primary">${t.userId}</td>
+        <td><span class="badge ${badgeClass} px-2 py-1 rounded-pill">${t.status}</span></td>
+        <td><b>${t.workType}</b></td>
+        <td>${t.area}</td>
+        <td>${t.team}</td>
+        <td>${t.address}</td>
+        <td>${t.phone}</td>
+        <td>${t.priority}</td>
+        <td><small class="text-muted">${t.materials || 'None'}</small></td>
+        <td class="text-end">
+          <button onclick="_previewShare('${t._dbKey}')" class="btn btn-sm btn-outline-info me-1" title="Share Dispatch Format"><i class="fa-solid fa-share-nodes"></i></button>
+          <button onclick="_openManualStatusModal('${t._dbKey}')" class="btn btn-sm btn-outline-warning" title="Edit Manual Status"><i class="fa-solid fa-pen-to-square"></i> Status</button>
+        </td>
+      `;
+      tb.appendChild(tr);
+    });
+  }
+
+  // Message Generator Format
+  function buildDispatchFormat(t) {
+    return `🔔 SAM ONLINE TASK REMINDER
 🆔 User ID: ${t.userId}
-
 📌 Status: ${t.status}
-
 📋 Work Type: ${t.workType}
-
-📝 Note: ${t.note || "N/A"}
-
+📝 Note: ${t.note}
 📍 Area: ${t.area}
-
-👥 Team: ${t.team || "Not Assigned"}
-
-🏠 Address: ${t.address || "N/A"}
-
-📞 Phone: ${t.phone || "N/A"}
-
+👥 Team: ${t.team}
+🏠 Address: ${t.address}
+📞 Phone: ${t.phone}
 🚦 Priority: ${t.priority}
-
 🔔 Reminder: ${t.reminder}
-
 ⏰ Reminder Due: ${t.reminderDue}
-
 ⚠️ কাজটি এখনও Running অবস্থায় আছে।
 দ্রুত Status Update করুন।
+কাজ শেষ হলে লিখুন: ${t.userId} done <মালামালের বিবরণ>
+©️ Sam Online Automation System`;
+  }
 
-কাজ শেষ হলে লিখুন:
-${t.userId} done <মালামালের বিবরণ>
+  function _showShareModal(t) {
+    currentPreviewText = buildDispatchFormat(t);
+    currentPhone = t.phone || "";
+    document.getElementById('sharePreviewText').innerText = currentPreviewText;
+    const modal = new bootstrap.Modal(document.getElementById('shareModal'));
+    modal.show();
+  }
 
-©️ Sam Online Automation System
-`.trim();
+  window._previewShare = function(dbKey) {
+    const t = taskCache.find(x => x._dbKey === dbKey);
+    if (t) _showShareModal(t);
+  }
 
-}
+  window._copyShareText = function() {
+    navigator.clipboard.writeText(currentPreviewText);
+    alert("Format copied to clipboard!");
+  }
 
+  window._sendToTelegramApp = function() {
+    window.open(`https://t.me/share/url?url=&text=${encodeURIComponent(currentPreviewText)}`, '_blank');
+  }
 
-/* ================= SHARE MODAL ================= */
-
-function _showShareModal(t){
-
-    currentPreviewText =
-        buildDispatchFormat(t);
-
-    currentPhone =
-        t.phone || "";
-
-
-    document
-        .getElementById(
-            "sharePreviewText"
-        )
-        .innerText =
-            currentPreviewText;
-
-
-    bootstrap.Modal
-        .getOrCreateInstance(
-            document.getElementById(
-                "shareModal"
-            )
-        )
-        .show();
-
-}
-
-
-window._previewShare =
-function(dbKey){
-
-    const task =
-        taskCache.find(
-            t =>
-                t._dbKey === dbKey
-        );
-
-
-    if(task){
-
-        _showShareModal(task);
-
+  window._sendToWhatsAppApp = function() {
+    let cleanPhone = currentPhone.replace(/[^0-9]/g, '');
+    if (cleanPhone.startsWith('0')) {
+      cleanPhone = '88' + cleanPhone;
     }
+    const waUrl = cleanPhone 
+      ? `https://web.whatsapp.com/send?phone=${cleanPhone}&text=${encodeURIComponent(currentPreviewText)}` 
+      : `https://web.whatsapp.com/send?text=${encodeURIComponent(currentPreviewText)}`;
+    window.open(waUrl, '_blank');
+  }
 
-};
-
-
-/* ================= COPY ================= */
-
-window._copyShareText =
-async function(){
-
-    try{
-
-        await navigator.clipboard.writeText(
-            currentPreviewText
-        );
-
-
-        alert(
-            "Task text copied successfully."
-        );
-
+  // Open Manual Status Modal
+  window._openManualStatusModal = function(dbKey) {
+    const t = taskCache.find(x => x._dbKey === dbKey);
+    if (t) {
+      document.getElementById('modalTaskDbKey').value = dbKey;
+      document.getElementById('modalStatusSelect').value = t.status || "🔄 Running";
+      document.getElementById('modalMaterialsInput').value = t.materials || "";
+      const stModal = new bootstrap.Modal(document.getElementById('statusChangeModal'));
+      stModal.show();
     }
+  }
 
-    catch(error){
+  // Save Manual Status Updates
+  window._saveManualStatusUpdate = async function() {
+    const dbKey = document.getElementById('modalTaskDbKey').value;
+    const newStatus = document.getElementById('modalStatusSelect').value;
+    const materials = document.getElementById('modalMaterialsInput').value.trim();
 
-        console.error(error);
+    if (!dbKey) return;
 
-        alert(
-            "Copy failed. Please select and copy manually."
-        );
-
+    _ldr(true);
+    try {
+      await update(ref(db, 'samonline_tasks/' + dbKey), { 
+        status: newStatus,
+        materials: materials || "No remarks/materials provided"
+      });
+      const stModalEl = document.getElementById('statusChangeModal');
+      const stModalInstance = bootstrap.Modal.getInstance(stModalEl);
+      if (stModalInstance) stModalInstance.hide();
+    } catch (e) {
+      alert("Failed to update status: " + e.message);
+    } finally {
+      _ldr(false);
     }
-
-};
-
-
-/* ================= WHATSAPP SHARE ================= */
-
-window._sendToWhatsAppApp =
-function(){
-
-    if(!currentPreviewText){
-
-        alert(
-            "No task text available."
-        );
-
-        return;
-
-    }
-
-
-    const waUrl =
-        _buildWhatsAppUrl(
-            currentPreviewText
-        );
-
-
-    /*
-       No customer phone is used here.
-       WhatsApp will show the share/contact
-       selection and the user can choose
-       their required group.
-    */
-
-    window.open(
-        waUrl,
-        "_blank",
-        "noopener,noreferrer"
-    );
-
-};
-
-
-/* ================= TELEGRAM ================= */
-
-window._sendToTelegramApp =
-function(){
-
-    const url =
-        "https://t.me/share/url" +
-        "?url=" +
-        "&text=" +
-        encodeURIComponent(
-            currentPreviewText
-        );
-
-
-    window.open(
-        url,
-        "_blank",
-        "noopener,noreferrer"
-    );
-
-};
-
-
-/* ================= FETCH TASKS ================= */
-
-function _fetchTasks(){
-
-    const tasksRef =
-        ref(
-            db,
-            "samonline_tasks"
-        );
-
-
-    onValue(
-        tasksRef,
-        snapshot => {
-
-            const data =
-                snapshot.val() || {};
-
-
-            taskCache =
-                Object.entries(data)
-                    .map(
-                        ([key,value]) => ({
-                            ...value,
-                            _dbKey:key
-                        })
-                    )
-                    .sort(
-                        (a,b) =>
-                            (b.timestamp || 0) -
-                            (a.timestamp || 0)
-                    );
-
-
-            _renderTasks();
-
-        },
-        error => {
-
-            console.error(
-                "Firebase realtime error:",
-                error
-            );
-
-        }
-    );
-
-}
-
-
-/* ================= RENDER TASKS ================= */
-
-window._renderTasks =
-function(){
-
-    const tbody =
-        document.getElementById(
-            "taskTableBody"
-        );
-
-
-    const search =
-        (
-            document
-                .getElementById(
-                    "smartSearchInput"
-                )
-                .value || ""
-        )
-        .trim()
-        .toLowerCase();
-
-
-    const zone =
-        document
-            .getElementById(
-                "zoneFilter"
-            )
-            .value;
-
-
-    const status =
-        document
-            .getElementById(
-                "statusFilter"
-            )
-            .value;
-
-
-    let tasks =
-        taskCache.filter(
-            t => {
-
-                const text =
-                    [
-                        t.userId,
-                        t.phone,
-                        t.area,
-                        t.team,
-                        t.address,
-                        t.workType,
-                        t.note
-                    ]
-                    .join(" ")
-                    .toLowerCase();
-
-
-                const matchesSearch =
-                    !search ||
-                    text.includes(search);
-
-
-                const matchesZone =
-                    !zone ||
-                    t.area === zone;
-
-
-                let matchesStatus =
-                    true;
-
-
-                if(status){
-
-                    const s =
-                        String(
-                            t.status || ""
-                        ).toLowerCase();
-
-
-                    if(status==="Running"){
-
-                        matchesStatus =
-                            s.includes(
-                                "running"
-                            );
-
-                    }
-
-                    else if(status==="Done"){
-
-                        matchesStatus =
-                            s.includes("done") ||
-                            s.includes("ok") ||
-                            s.includes("completed");
-
-                    }
-
-                    else if(status==="Hold"){
-
-                        matchesStatus =
-                            s.includes("hold");
-
-                    }
-
-                    else if(status==="Cancelled"){
-
-                        matchesStatus =
-                            s.includes(
-                                "cancel"
-                            );
-
-                    }
-
-                }
-
-
-                return (
-                    matchesSearch &&
-                    matchesZone &&
-                    matchesStatus
-                );
-
-            }
-        );
-
-
-    /* KPI */
-
-    const total =
-        taskCache.length;
-
-
-    const running =
-        taskCache.filter(
-            t =>
-                String(
-                    t.status || ""
-                )
-                .toLowerCase()
-                .includes("running")
-        ).length;
-
-
-    const done =
-        taskCache.filter(
-            t => {
-
-                const s =
-                    String(
-                        t.status || ""
-                    )
-                    .toLowerCase();
-
-
-                return (
-                    s.includes("done") ||
-                    s.includes("ok") ||
-                    s.includes("completed")
-                );
-
-            }
-        ).length;
-
-
-    document.getElementById(
-        "cntTotal"
-    ).innerText = total;
-
-
-    document.getElementById(
-        "cntRunning"
-    ).innerText = running;
-
-
-    document.getElementById(
-        "cntDone"
-    ).innerText = done;
-
-
-    /* EMPTY */
-
-    if(!tasks.length){
-
-        tbody.innerHTML = `
-            <tr>
-                <td colspan="10">
-                    <div class="empty-state">
-                        <i class="fa-solid fa-inbox fs-1 mb-3"></i>
-                        <div class="fw-bold">
-                            No task found
-                        </div>
-                        <div class="small">
-                            Create a new task or change your filters.
-                        </div>
-                    </div>
-                </td>
-            </tr>
-        `;
-
-        return;
-
-    }
-
-
-    tbody.innerHTML =
-        tasks.map(
-            t => {
-
-                const statusText =
-                    String(
-                        t.status || ""
-                    );
-
-
-                let statusClass =
-                    "bg-primary";
-
-
-                if(
-                    statusText
-                        .toLowerCase()
-                        .includes("done")
-                ){
-
-                    statusClass =
-                        "bg-success";
-
-                }
-
-                else if(
-                    statusText
-                        .toLowerCase()
-                        .includes("hold")
-                ){
-
-                    statusClass =
-                        "bg-warning text-dark";
-
-                }
-
-                else if(
-                    statusText
-                        .toLowerCase()
-                        .includes("cancel")
-                ){
-
-                    statusClass =
-                        "bg-danger";
-
-                }
-
-
-                return `
-                <tr>
-
-                    <td>
-                        <div class="fw-bold">
-                            ${_esc(t.userId)}
-                        </div>
-                    </td>
-
-
-                    <td>
-                        <span class="badge ${statusClass} status-badge">
-                            ${_esc(statusText)}
-                        </span>
-                    </td>
-
-
-                    <td>
-                        ${_esc(t.workType || "-")}
-                    </td>
-
-
-                    <td>
-                        <span class="badge bg-info text-dark">
-                            ${_esc(t.area || "-")}
-                        </span>
-                    </td>
-
-
-                    <td>
-                        ${_esc(t.team || "-")}
-                    </td>
-
-
-                    <td>
-                        ${_esc(t.address || "-")}
-                    </td>
-
-
-                    <td>
-                        ${_esc(t.phone || "-")}
-                    </td>
-
-
-                    <td>
-                        <span class="badge bg-secondary priority-badge">
-                            ${_esc(t.priority || "-")}
-                        </span>
-                    </td>
-
-
-                    <td>
-                        ${_esc(t.materials || t.note || "-")}
-                    </td>
-
-
-                    <td>
-
-                        <div class="task-actions">
-
-                            <!-- SHARE -->
-                            <button
-                                class="btn btn-outline-primary action-btn"
-                                onclick="_previewShare('${t._dbKey}')"
-                                title="Share Task">
-
-                                <i class="fa-solid fa-share-nodes"></i>
-
-                            </button>
-
-
-                            <!-- STATUS -->
-                            <button
-                                class="btn btn-outline-warning action-btn"
-                                onclick="_openStatusModal('${t._dbKey}')"
-                                title="Update Status">
-
-                                <i class="fa-solid fa-pen"></i>
-
-                            </button>
-
-
-                            <!-- WHATSAPP -->
-                            <button
-                                class="btn btn-wa action-btn"
-                                onclick="_quickWhatsApp('${t._dbKey}')"
-                                title="WhatsApp Group-এ পাঠান"
-                                aria-label="WhatsApp Group-এ পাঠান">
-
-                                <i class="fa-brands fa-whatsapp"></i>
-
-                            </button>
-
-                        </div>
-
-                    </td>
-
-                </tr>
-                `;
-
-            }
-        )
-        .join("");
-
-};
-
-
-/* ================= QUICK WHATSAPP FROM TABLE ================= */
-
-window._quickWhatsApp =
-function(dbKey){
-
-    const task =
-        taskCache.find(
-            t =>
-                t._dbKey === dbKey
-        );
-
-
-    if(!task){
-
-        alert(
-            "Task not found."
-        );
-
-        return;
-
-    }
-
-
-    const text =
-        buildDispatchFormat(
-            task
-        );
-
-
-    currentPreviewText =
-        text;
-
-
-    const waUrl =
-        _buildWhatsAppUrl(
-            text
-        );
-
-
-    window.open(
-        waUrl,
-        "_blank",
-        "noopener,noreferrer"
-    );
-
-};
-
-
-/* ================= STATUS MODAL ================= */
-
-window._openStatusModal =
-function(dbKey){
-
-    const task =
-        taskCache.find(
-            t =>
-                t._dbKey === dbKey
-        );
-
-
-    if(!task){
-
-        return;
-
-    }
-
-
-    document
-        .getElementById(
-            "modalTaskDbKey"
-        )
-        .value =
-            dbKey;
-
-
-    document
-        .getElementById(
-            "modalStatusSelect"
-        )
-        .value =
-            task.status ||
-            "🔄 Running";
-
-
-    document
-        .getElementById(
-            "modalMaterialsInput"
-        )
-        .value =
-            task.materials ||
-            "";
-
-
-    bootstrap.Modal
-        .getOrCreateInstance(
-            document.getElementById(
-                "statusChangeModal"
-            )
-        )
-        .show();
-
-};
-
-
-/* ================= SAVE MANUAL STATUS ================= */
-
-window._saveManualStatusUpdate =
-async function(){
-
-    if(!_usr){
-
-        return;
-
-    }
-
-
-    const dbKey =
-        document
-            .getElementById(
-                "modalTaskDbKey"
-            )
-            .value;
-
-
-    const status =
-        document
-            .getElementById(
-                "modalStatusSelect"
-            )
-            .value;
-
-
-    const materials =
-        document
-            .getElementById(
-                "modalMaterialsInput"
-            )
-            .value
-            .trim();
-
-
-    if(!dbKey){
-
-        return;
-
-    }
-
-
-    _ldr(
-        true,
-        "Updating status..."
-    );
-
-
-    try{
-
-        await update(
-            ref(
-                db,
-                "samonline_tasks/" +
-                dbKey
-            ),
-            {
-                status:
-                    status,
-
-                materials:
-                    materials,
-
-                updatedAt:
-                    Date.now(),
-
-                updatedBy:
-                    _usr.email
-            }
-        );
-
-
-        bootstrap.Modal
-            .getOrCreateInstance(
-                document.getElementById(
-                    "statusChangeModal"
-                )
-            )
-            .hide();
-
-
-    }
-
-    catch(error){
-
-        console.error(error);
-
-        alert(
-            "Status update failed.\n\n" +
-            (
-                error.message ||
-                "Unknown error."
-            )
-        );
-
-    }
-
-    finally{
-
-        _ldr(false);
-
-    }
-
-};
-
-
-/* ================= HTML ESCAPE ================= */
-
-function _esc(value){
-
-    return String(
-        value ?? ""
-    )
-    .replace(
-        /&/g,
-        "&amp;"
-    )
-    .replace(
-        /</g,
-        "&lt;"
-    )
-    .replace(
-        />/g,
-        "&gt;"
-    )
-    .replace(
-        /"/g,
-        "&quot;"
-    )
-    .replace(
-        /'/g,
-        "&#039;"
-    );
-
-}
-
-
-/* ================= INIT ================= */
-
-document.addEventListener(
-    "DOMContentLoaded",
-    function(){
-
-        const savedTheme =
-            localStorage.getItem(
-                "appTheme"
-            );
-
-
-        _setThm(
-            savedTheme ||
-            "ai"
-        );
-
-
-        initZones();
-
-    }
-);
-
+  }
 </script>
-
 </body>
 </html>
