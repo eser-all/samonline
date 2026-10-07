@@ -339,6 +339,7 @@
               <option value="🔄 Running">🔄 Running</option>
               <option value="✅ Done">✅ Done</option>
               <option value="⏸️ Hold">⏸️ Hold</option>
+              <option value="❌ Cancelled">❌ Cancelled</option>
             </select>
 
             <!-- Change Theme Button -->
@@ -415,6 +416,7 @@
                 <th>User ID</th>
                 <th>Status</th>
                 <th>Work Type</th>
+                <th>Problem / Note</th>
                 <th>Area / Zone</th>
                 <th>Team</th>
                 <th>Address</th>
@@ -447,11 +449,12 @@
           <div class="row g-3 mb-3">
             <div class="col-md-4">
               <label class="form-label fw-semibold">User ID</label>
-              <input type="text" id="userId" class="form-control" placeholder="e.g. SAM-102030" required>
+              <input type="text" id="userId" class="form-control" placeholder="e.g. ucn608" required>
             </div>
             <div class="col-md-4">
               <label class="form-label fw-semibold">Work Type</label>
               <select id="workType" class="form-select" required>
+                <option value="Regular Problem">Regular Problem</option>
                 <option value="New Line">New Line</option>
                 <option value="Complain / Repair">Complain / Repair</option>
                 <option value="Shifting">Shifting</option>
@@ -482,30 +485,30 @@
           <div class="row g-3 mb-3">
             <div class="col-md-6">
               <label class="form-label fw-semibold">Customer Address</label>
-              <input type="text" id="address" class="form-control" placeholder="e.g. Porosmoni 6A" required>
+              <input type="text" id="address" class="form-control" placeholder="e.g. Munshi Market" required>
             </div>
             <div class="col-md-6">
               <label class="form-label fw-semibold">Phone Number</label>
-              <input type="tel" id="phone" class="form-control" placeholder="01700000000" required>
+              <input type="tel" id="phone" class="form-control" placeholder="01671952367" required>
             </div>
           </div>
 
           <div class="mb-3">
-            <label class="form-label fw-semibold">Note / Package Detail</label>
-            <input type="text" id="note" class="form-control" placeholder="Pkg(500x1)month" required>
+            <label class="form-label fw-semibold">Problem Type / Note</label>
+            <input type="text" id="note" class="form-control" placeholder="e.g. Loss Light" required>
           </div>
 
           <!-- Modal Action Buttons -->
           <div class="d-flex flex-wrap justify-content-end gap-2 mt-4">
             <button type="button" class="btn btn-secondary px-3 py-2" data-bs-dismiss="modal">Cancel</button>
             
-            <!-- WhatsApp Icon Button (Direct Text Removed as Requested) -->
+            <!-- WhatsApp Direct Dispatch Button -->
             <button type="button" onclick="_submitTaskAndSendWA()" class="btn btn-wa px-3 py-2" title="Send directly via WhatsApp">
               <i class="fa-brands fa-whatsapp fs-5"></i>
             </button>
 
             <button type="submit" class="btn btn-tg px-4 py-2">
-              <i class="fa-solid fa-paper-plane me-1"></i> Create & Dispatch
+              <i class="fa-solid fa-paper-plane me-1"></i> Create & Save Task
             </button>
           </div>
         </form>
@@ -534,7 +537,7 @@
           </div>
           <div class="col-6">
             <button onclick="_sendToWhatsAppApp()" class="btn btn-wa w-100 py-2">
-              <i class="fa-brands fa-whatsapp me-1"></i> Web WhatsApp
+              <i class="fa-brands fa-whatsapp me-1"></i> WhatsApp
             </button>
           </div>
           <div class="col-12">
@@ -588,7 +591,6 @@
 <footer class="app-footer">
   <div class="container-fluid px-md-3">
     <div class="row align-items-center justify-content-center text-center g-2">
-      <!-- Centered Information Text -->
       <div class="col-12">
         <p class="mb-0 fw-semibold d-inline-block me-2">Sam Online Automation System | Safe & Secure Platform.</p>
         <small class="text-muted d-inline-block">Developed by <strong class="animated-author">Antu</strong></small>
@@ -605,7 +607,7 @@
   import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
   import { getDatabase, ref, set, push, onValue, update } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
-  // Firebase Configuration (Samonline-53e0f)
+  // Firebase Configuration
   const firebaseConfig = {
     apiKey: "AIzaSyA0xdc-qo2YYvOsOPm_3cT9hwT5OKDz4tw",
     authDomain: "samonline-53e0f.firebaseapp.com",
@@ -693,7 +695,7 @@
 
   window._xOut = function() { signOut(auth); }
 
-  // Save Task Logic
+  // Save Task Logic (FIXED DATABASE SAVE ISSUE)
   async function _saveTaskData() {
     if (!_usr) return null;
 
@@ -706,10 +708,6 @@
     const ph = document.getElementById('phone').value.trim();
     const nt = document.getElementById('note').value.trim();
 
-    const now = new Date();
-    const dueTime = new Date(now.getTime() + 2 * 60 * 60 * 1000);
-    const formattedDue = dueTime.toLocaleDateString('en-GB').replace(/\//g, '-') + ' ' + dueTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-
     const newTask = {
       userId: uId,
       status: "🔄 Running",
@@ -721,18 +719,19 @@
       phone: ph,
       priority: prio,
       materials: "",
-      reminder: "1 of 4",
-      reminderDue: formattedDue,
       createdBy: _usr.email,
       timestamp: Date.now()
     };
 
-    const recordKey = uId.replace(/[.#$[\]]/g, "_") + "_" + Date.now();
-    await set(ref(db, 'samonline_tasks/' + recordKey), newTask);
+    // Database push with standard unique key to prevent key overwrites
+    const tasksRef = ref(db, 'samonline_tasks');
+    const newTaskRef = push(tasksRef);
+    await set(newTaskRef, newTask);
+    
     return newTask;
   }
 
-  // Submit via Standard Create & Dispatch Button
+  // Submit via Standard Create & Save Button
   document.getElementById('taskForm').addEventListener('submit', async (e) => {
     e.preventDefault();
     _ldr(true);
@@ -740,7 +739,8 @@
       const newTask = await _saveTaskData();
       if (newTask) {
         document.getElementById('taskForm').reset();
-        const modalInstance = bootstrap.Modal.getInstance(document.getElementById('newTaskModal'));
+        const modalEl = document.getElementById('newTaskModal');
+        const modalInstance = bootstrap.Modal.getInstance(modalEl);
         if (modalInstance) modalInstance.hide();
         _showShareModal(newTask);
       }
@@ -749,7 +749,7 @@
     } finally { _ldr(false); }
   });
 
-  // Submit via WhatsApp Button Fixed & Direct Launch
+  // Direct WhatsApp Send Action
   window._submitTaskAndSendWA = async function() {
     const form = document.getElementById('taskForm');
     if (!form.checkValidity()) {
@@ -766,14 +766,14 @@
         const modalInstance = bootstrap.Modal.getInstance(modalEl);
         if (modalInstance) modalInstance.hide();
         
-        // WhatsApp Direct Link Generator
+        // Launch WhatsApp
         const text = buildDispatchFormat(newTask);
         let cleanPhone = (newTask.phone || "").replace(/[^0-9]/g, '');
         if (cleanPhone.startsWith('0')) cleanPhone = '88' + cleanPhone;
         
         const waUrl = cleanPhone 
-          ? `https://web.whatsapp.com/send?phone=${cleanPhone}&text=${encodeURIComponent(text)}`
-          : `https://web.whatsapp.com/send?text=${encodeURIComponent(text)}`;
+          ? `https://api.whatsapp.com/send?phone=${cleanPhone}&text=${encodeURIComponent(text)}`
+          : `https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`;
         
         window.open(waUrl, '_blank');
       }
@@ -830,7 +830,7 @@
     document.getElementById('tableRecordCount').innerText = `Showing ${filtered.length} Items`;
 
     if (filtered.length === 0) {
-      tb.innerHTML = `<tr><td colspan="10" class="text-center text-muted py-4">No matching complaints or tasks found</td></tr>`;
+      tb.innerHTML = `<tr><td colspan="11" class="text-center text-muted py-4">No matching complaints or tasks found</td></tr>`;
       return;
     }
 
@@ -846,6 +846,7 @@
         <td class="fw-bold text-primary">${t.userId}</td>
         <td><span class="badge ${badgeClass} px-2 py-1 rounded-pill">${t.status}</span></td>
         <td><b>${t.workType}</b></td>
+        <td>${t.note || '-'}</td>
         <td>${t.area}</td>
         <td>${t.team}</td>
         <td>${t.address}</td>
@@ -853,32 +854,30 @@
         <td>${t.priority}</td>
         <td><small class="text-muted">${t.materials || 'None'}</small></td>
         <td class="text-end">
-          <button onclick="_previewShare('${t._dbKey}')" class="btn btn-sm btn-outline-info me-1" title="Share Dispatch Format"><i class="fa-solid fa-share-nodes"></i></button>
-          <button onclick="_openManualStatusModal('${t._dbKey}')" class="btn btn-sm btn-outline-warning" title="Edit Manual Status"><i class="fa-solid fa-pen-to-square"></i> Status</button>
+          <button onclick="_previewShare('${t._dbKey}')" class="btn btn-sm btn-outline-info me-1" title="Share Task"><i class="fa-solid fa-share-nodes"></i></button>
+          <button onclick="_openManualStatusModal('${t._dbKey}')" class="btn btn-sm btn-outline-warning" title="Edit Status"><i class="fa-solid fa-pen-to-square"></i> Status</button>
         </td>
       `;
       tb.appendChild(tr);
     });
   }
 
-  // Message Generator Format
+  // CUSTOM MESSAGE DISPATCH FORMATTER
   function buildDispatchFormat(t) {
-    return `🔔 SAM ONLINE TASK REMINDER
-🆔 User ID: ${t.userId}
+    return `🚨 SAM ONLINE TASK
+👤 User ID: ${t.userId}
 📌 Status: ${t.status}
 📋 Work Type: ${t.workType}
-📝 Note: ${t.note}
+🔧 Problem Type: ${t.note}
 📍 Area: ${t.area}
 👥 Team: ${t.team}
 🏠 Address: ${t.address}
-📞 Phone: ${t.phone}
+📞 Phone 1: ${t.phone}
 🚦 Priority: ${t.priority}
-🔔 Reminder: ${t.reminder}
-⏰ Reminder Due: ${t.reminderDue}
-⚠️ কাজটি এখনও Running অবস্থায় আছে।
-দ্রুত Status Update করুন।
-কাজ শেষ হলে লিখুন: ${t.userId} done <মালামালের বিবরণ>
-©️ Sam Online Automation System`;
+🌐 Connection Type: Fiber
+📌 ${t.workType} টি যাচাই করে প্রয়োজনীয় সমাধান সম্পন্ন করুন।
+✍️ Status update: Task ID দিয়ে Done / Hold / Cancel / OCC লিখুন।
+©️ Sam Online Automation`;
   }
 
   function _showShareModal(t) {
@@ -896,7 +895,7 @@
 
   window._copyShareText = function() {
     navigator.clipboard.writeText(currentPreviewText);
-    alert("Format copied to clipboard!");
+    alert("Task format copied to clipboard!");
   }
 
   window._sendToTelegramApp = function() {
@@ -909,12 +908,12 @@
       cleanPhone = '88' + cleanPhone;
     }
     const waUrl = cleanPhone 
-      ? `https://web.whatsapp.com/send?phone=${cleanPhone}&text=${encodeURIComponent(currentPreviewText)}` 
-      : `https://web.whatsapp.com/send?text=${encodeURIComponent(currentPreviewText)}`;
+      ? `https://api.whatsapp.com/send?phone=${cleanPhone}&text=${encodeURIComponent(currentPreviewText)}` 
+      : `https://api.whatsapp.com/send?text=${encodeURIComponent(currentPreviewText)}`;
     window.open(waUrl, '_blank');
   }
 
-  // Open Manual Status Modal
+  // Open Manual Status Change Modal
   window._openManualStatusModal = function(dbKey) {
     const t = taskCache.find(x => x._dbKey === dbKey);
     if (t) {
