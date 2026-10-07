@@ -97,6 +97,31 @@
       transition: all 0.3s ease;
     }
 
+    /* Dashboard Metric Cards */
+    .stat-card {
+      border-radius: 12px;
+      padding: 15px 20px;
+      background: var(--tg-card-bg);
+      border: 1px solid var(--tg-border);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      transition: transform 0.2s ease;
+    }
+    .stat-card:hover {
+      transform: translateY(-2px);
+    }
+    .stat-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.4rem;
+    }
+
     .form-control, .form-select {
       background-color: var(--tg-input-bg);
       border: 1px solid var(--tg-border);
@@ -259,16 +284,76 @@
     </div>
 
     <div class="container-fluid px-md-4">
-      <div class="card card-custom p-3 mb-3 telegram-bubble">
-        <div class="d-flex justify-content-between align-items-center mb-3">
-          <div class="fw-bold text-primary" style="font-size: 1.1rem;">
-            <i class="fa-solid fa-list-check me-2"></i> All Active Tasks & Complaints
+      
+      <!-- 📊 THREE DASHBOARD COUNTER CARDS -->
+      <div class="row g-3 mb-3">
+        <div class="col-md-4">
+          <div class="stat-card">
+            <div>
+              <div class="text-muted small fw-semibold text-uppercase">Total Complaints</div>
+              <h3 class="fw-bold mb-0 text-primary" id="cntTotal">0</h3>
+            </div>
+            <div class="stat-icon bg-primary bg-opacity-10 text-primary">
+              <i class="fa-solid fa-clipboard-list"></i>
+            </div>
           </div>
-          <div class="d-flex gap-2 align-items-center">
-            <select id="zoneFilter" class="form-select form-select-sm" style="width: 160px;" onchange="_renderTasks()">
+        </div>
+        <div class="col-md-4">
+          <div class="stat-card">
+            <div>
+              <div class="text-muted small fw-semibold text-uppercase">Running Complaints</div>
+              <h3 class="fw-bold mb-0 text-warning" id="cntRunning">0</h3>
+            </div>
+            <div class="stat-icon bg-warning bg-opacity-10 text-warning">
+              <i class="fa-solid fa-spinner fa-spin"></i>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="stat-card">
+            <div>
+              <div class="text-muted small fw-semibold text-uppercase">Completed / Done</div>
+              <h3 class="fw-bold mb-0 text-success" id="cntDone">0</h3>
+            </div>
+            <div class="stat-icon bg-success bg-opacity-10 text-success">
+              <i class="fa-solid fa-circle-check"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 🔍 SMART SEARCH ENGINE & FILTER BAR -->
+      <div class="card card-custom p-3 mb-3 telegram-bubble">
+        <div class="row g-2 align-items-center">
+          <div class="col-md-5">
+            <div class="input-group">
+              <span class="input-group-text bg-transparent border-end-0 text-muted"><i class="fa-solid fa-magnifying-glass"></i></span>
+              <input type="text" id="smartSearchInput" class="form-control border-start-0 ps-0" placeholder="Search by User ID or Mobile Phone No..." onkeyup="_renderTasks()">
+            </div>
+          </div>
+          <div class="col-md-4">
+            <select id="zoneFilter" class="form-select" onchange="_renderTasks()">
               <option value="">All 60 Zones</option>
             </select>
           </div>
+          <div class="col-md-3">
+            <select id="statusFilter" class="form-select" onchange="_renderTasks()">
+              <option value="">All Statuses</option>
+              <option value="🔄 Running">🔄 Running</option>
+              <option value="✅ Done">✅ Done</option>
+              <option value="⏸️ Hold">⏸️ Hold</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- 📋 TASK & COMPLAINT TABLE -->
+      <div class="card card-custom p-3 mb-3 telegram-bubble">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <div class="fw-bold text-primary" style="font-size: 1.1rem;">
+            <i class="fa-solid fa-list-check me-2"></i> Complaints & Task List
+          </div>
+          <span class="badge bg-secondary rounded-pill" id="tableRecordCount">Showing 0 Items</span>
         </div>
 
         <div class="table-responsive" style="max-height: 520px;">
@@ -283,6 +368,7 @@
                 <th>Address</th>
                 <th>Phone</th>
                 <th>Priority</th>
+                <th>Comments / Materials</th>
                 <th>Actions</th>
               </tr>
             </thead>
@@ -524,6 +610,7 @@
       address: addr,
       phone: ph,
       priority: prio,
+      materials: "", // টেকনিশিয়ানদের মালামালের হিসাব এখানে আসবে
       reminder: "1 of 4",
       reminderDue: formattedDue,
       createdBy: _usr.email,
@@ -560,30 +647,60 @@
     });
   }
 
-  // Render Tasks Table
+  // Smart Render Engine: Renders Table & Dynamic 3 Dashboard Counters
   window._renderTasks = function() {
     const tb = document.getElementById('taskTableBody');
-    const filter = document.getElementById('zoneFilter').value;
+    const zFilter = document.getElementById('zoneFilter').value;
+    const sFilter = document.getElementById('statusFilter').value;
+    const sQuery = document.getElementById('smartSearchInput').value.trim().toLowerCase();
+
     tb.innerHTML = '';
 
-    const filtered = filter ? taskCache.filter(t => t.area === filter) : taskCache;
+    // Advanced Multi-Layer Search Filter
+    const filtered = taskCache.filter(t => {
+      const matchZone = zFilter ? (t.area === zFilter) : true;
+      const matchStatus = sFilter ? (t.status === sFilter) : true;
+      const matchSearch = sQuery ? (
+        (t.userId && t.userId.toLowerCase().includes(sQuery)) ||
+        (t.phone && t.phone.toLowerCase().includes(sQuery)) ||
+        (t.area && t.area.toLowerCase().includes(sQuery))
+      ) : true;
+
+      return matchZone && matchStatus && matchSearch;
+    });
+
+    // Update 3 Dynamic Dashboard Counters based on Active Filter/Zone Selection
+    const totalCount = filtered.length;
+    const runningCount = filtered.filter(t => t.status && t.status.includes('Running')).length;
+    const doneCount = filtered.filter(t => t.status && (t.status.includes('Done') || t.status.includes('OK'))).length;
+
+    document.getElementById('cntTotal').innerText = totalCount;
+    document.getElementById('cntRunning').innerText = runningCount;
+    document.getElementById('cntDone').innerText = doneCount;
+    document.getElementById('tableRecordCount').innerText = `Showing ${filtered.length} Items`;
 
     if (filtered.length === 0) {
-      tb.innerHTML = `<tr><td colspan="9" class="text-center text-muted py-3">No tasks found</td></tr>`;
+      tb.innerHTML = `<tr><td colspan="10" class="text-center text-muted py-4">No matching complaints or tasks found</td></tr>`;
       return;
     }
 
     filtered.forEach(t => {
       const tr = document.createElement('tr');
+      
+      let badgeClass = "bg-warning text-dark";
+      if (t.status && (t.status.includes('Done') || t.status.includes('OK'))) badgeClass = "bg-success text-white";
+      else if (t.status && t.status.includes('Hold')) badgeClass = "bg-danger text-white";
+
       tr.innerHTML = `
         <td class="fw-bold text-primary">${t.userId}</td>
-        <td><span class="badge bg-warning text-dark px-2 rounded-pill">${t.status}</span></td>
+        <td><span class="badge ${badgeClass} px-2 py-1 rounded-pill">${t.status}</span></td>
         <td><b>${t.workType}</b></td>
         <td>${t.area}</td>
         <td>${t.team}</td>
         <td>${t.address}</td>
         <td>${t.phone}</td>
         <td>${t.priority}</td>
+        <td><small class="text-muted">${t.materials || 'None'}</small></td>
         <td>
           <button onclick="_previewTelegram('${t._dbKey}')" class="btn btn-sm btn-outline-info me-1" title="Telegram View"><i class="fa-brands fa-telegram"></i></button>
           <button onclick="_markDone('${t._dbKey}')" class="btn btn-sm btn-outline-success" title="Mark Done"><i class="fa-solid fa-check"></i></button>
@@ -609,7 +726,7 @@
 ⏰ Reminder Due: ${t.reminderDue}
 ⚠️ কাজটি এখনও Running অবস্থায় আছে।
 দ্রুত Status Update করুন।
-কাজ শেষ হলে লিখুন: ${t.userId} done
+কাজ শেষ হলে লিখুন: ${t.userId} done <মালামালের বিবরণ>
 ©️ Sam Online Automation`;
   }
 
@@ -636,11 +753,17 @@
 
   window._markDone = async function(dbKey) {
     const t = taskCache.find(x => x._dbKey === dbKey);
-    if (t && confirm(`Mark User ID ${t.userId} as Done?`)) {
-      _ldr(true);
-      try {
-        await update(ref(db, 'samonline_tasks/' + dbKey), { status: "✅ Done" });
-      } catch (e) { alert(e.message); } finally { _ldr(false); }
+    if (t) {
+      const mat = prompt(`Mark User ID ${t.userId} as Done?\nUsed Materials / Comments (Optional):`);
+      if (mat !== null) {
+        _ldr(true);
+        try {
+          await update(ref(db, 'samonline_tasks/' + dbKey), { 
+            status: "✅ Done",
+            materials: mat.trim() || "Completed without extra materials"
+          });
+        } catch (e) { alert(e.message); } finally { _ldr(false); }
+      }
     }
   }
 </script>
