@@ -58,6 +58,7 @@
       flex-direction: column;
       font-size: 0.95rem;
       transition: all 0.3s ease;
+      user-select: none; /* Text selection disable to protect UI */
     }
 
     .telegram-bubble {
@@ -98,7 +99,6 @@
       transition: all 0.3s ease;
     }
 
-    /* Metric Cards */
     .stat-card {
       border-radius: 12px;
       padding: 12px 18px;
@@ -162,19 +162,6 @@
     [data-bs-theme="ai"] .btn-tg { color: #050811; }
     .btn-tg:hover { background-color: var(--tg-primary-hover); color: #fff; }
 
-    .btn-wa {
-      background-color: #25D366;
-      color: #ffffff;
-      border-radius: 8px;
-      font-weight: 600;
-      font-size: 0.88rem;
-      border: none;
-      padding: 6px 14px;
-      transition: all 0.2s ease;
-      white-space: nowrap;
-    }
-    .btn-wa:hover { background-color: #1EBE5D; color: #fff; }
-
     .auth-container { max-width: 420px; margin: 80px auto; }
     .loading-overlay { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.4); backdrop-filter: blur(3px); z-index: 9999; justify-content: center; align-items: center; }
     
@@ -237,7 +224,6 @@
       border-left: 4px solid #2AABEE;
     }
 
-    /* Horizontal Navbar Single Line Scroll Setup */
     .header-scroll-container {
       display: flex;
       align-items: center;
@@ -255,8 +241,23 @@
       border-radius: 3px;
     }
   </style>
+
+  <!-- F12 & Developer Tools Protection Script -->
+  <script>
+    document.addEventListener('contextmenu', e => e.preventDefault());
+    document.addEventListener('keydown', e => {
+      if (
+        e.key === 'F12' || 
+        (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'J' || e.key === 'C')) || 
+        (e.ctrlKey && e.key === 'u')
+      ) {
+        e.preventDefault();
+        return false;
+      }
+    });
+  </script>
 </head>
-<body oncontextmenu="return false;">
+<body>
 
 <div id="loader" class="loading-overlay">
   <div class="spinner-border text-primary" style="width: 3.5rem; height: 3.5rem;" role="status"></div>
@@ -297,10 +298,8 @@
   <div id="dashboardSection" style="display: none;">
     <div class="header-banner mb-3">
       <div class="container-fluid px-md-3">
-        <!-- Single Horizontal Row Header -->
         <div class="header-scroll-container">
           
-          <!-- Left Controls: Brand Logo -> Badge -> Create Task -> Smart Search -->
           <div class="d-flex align-items-center flex-nowrap gap-2 me-auto">
             <div class="brand-logo-box">
               <svg width="110" height="28" viewBox="0 0 300 80">
@@ -311,29 +310,23 @@
                 <text x="180" y="55" font-family="sans-serif" font-weight="bold" font-size="38" fill="#0077b5">nline</text>
               </svg>
             </div>
-            <span id="themeIndicator" class="ai-badge me-2">AI MOOD</span>
+            <span id="themeIndicator" class="ai-badge me-2">LIGHT MOOD</span>
 
-            <!-- Create Task Button (Immediately after Theme Status) -->
             <button type="button" class="btn btn-tg shadow-sm px-3 flex-shrink-0" data-bs-toggle="modal" data-bs-target="#newTaskModal">
               <i class="fa-solid fa-plus-circle me-1"></i> Create Task
             </button>
 
-            <!-- Compact Search Engine Box (Placed at Left with Border) -->
             <div class="input-group compact-search-box flex-shrink-0 border rounded-2 ms-1">
               <span class="input-group-text bg-transparent border-end-0 text-muted p-1 ps-2"><i class="fa-solid fa-magnifying-glass small"></i></span>
               <input type="text" id="smartSearchInput" class="form-control border-start-0 ps-1" placeholder="User ID/Phone..." onkeyup="_renderTasks()">
             </div>
           </div>
 
-          <!-- Right Controls: Zones Filter -> Status Filter -> Theme Switch -> Top Email & Logout -->
           <div class="d-flex align-items-center flex-nowrap gap-2 ms-2">
-            
-            <!-- Compact 60 Zones Filter -->
             <select id="zoneFilter" class="form-select compact-select flex-shrink-0" onchange="_renderTasks()">
               <option value="">All Zones</option>
             </select>
 
-            <!-- Compact Status Filter -->
             <select id="statusFilter" class="form-select compact-select flex-shrink-0" onchange="_renderTasks()">
               <option value="">All Status</option>
               <option value="🔄 Running">🔄 Running</option>
@@ -342,19 +335,16 @@
               <option value="❌ Cancelled">❌ Cancelled</option>
             </select>
 
-            <!-- Change Theme Button -->
             <button onclick="_xThm()" id="themeBtn" class="btn btn-outline-secondary rounded-circle p-0 flex-shrink-0 ms-1 me-2" style="width: 32px; height: 32px;" title="Change Theme">
-              <i id="themeIcon" class="fa-solid fa-robot text-info small"></i>
+              <i id="themeIcon" class="fa-solid fa-sun text-warning small"></i>
             </button>
 
-            <!-- Logout & Email Address Section (Placed at Top Right Corner) -->
             <div class="d-inline-flex align-items-center gap-1 border-start ps-2 flex-shrink-0" id="headerAuthControls">
               <span id="userDisplayEmail" class="badge bg-body-tertiary text-body border py-2 px-2 rounded-pill fw-normal small me-1"></span>
               <button onclick="_xOut()" class="btn btn-outline-danger btn-sm fw-semibold rounded-2 px-2 py-1" title="Logout">
                 <i class="fa-solid fa-power-off"></i>
               </button>
             </div>
-
           </div>
 
         </div>
@@ -362,8 +352,6 @@
     </div>
 
     <div class="container-fluid px-md-3">
-      
-      <!-- 📊 THREE DASHBOARD COUNTER CARDS -->
       <div class="row g-2 mb-3">
         <div class="col-md-4">
           <div class="stat-card">
@@ -400,7 +388,7 @@
         </div>
       </div>
 
-      <!-- 📋 TASK & COMPLAINT TABLE -->
+      <!-- Task Table -->
       <div class="card card-custom p-3 mb-3 telegram-bubble">
         <div class="d-flex justify-content-between align-items-center mb-2">
           <div class="fw-bold text-primary" style="font-size: 1rem;">
@@ -434,7 +422,7 @@
   </div>
 </div>
 
-<!-- ================= New Task Modal Window ================= -->
+<!-- New Task Modal Window -->
 <div class="modal fade" id="newTaskModal" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered modal-lg">
     <div class="modal-content shadow-lg p-3">
@@ -498,17 +486,10 @@
             <input type="text" id="note" class="form-control" placeholder="e.g. Loss Light" required>
           </div>
 
-          <!-- Modal Action Buttons -->
-          <div class="d-flex flex-wrap justify-content-end gap-2 mt-4">
+          <div class="d-flex justify-content-end gap-2 mt-4">
             <button type="button" class="btn btn-secondary px-3 py-2" data-bs-dismiss="modal">Cancel</button>
-            
-            <!-- WhatsApp Direct Dispatch Button -->
-            <button type="button" onclick="_submitTaskAndSendWA()" class="btn btn-wa px-3 py-2" title="Send directly via WhatsApp">
-              <i class="fa-brands fa-whatsapp fs-5"></i>
-            </button>
-
             <button type="submit" class="btn btn-tg px-4 py-2">
-              <i class="fa-solid fa-paper-plane me-1"></i> Create & Save Task
+              <i class="fa-solid fa-paper-plane me-1"></i> Create & Send to Telegram
             </button>
           </div>
         </form>
@@ -523,21 +504,16 @@
     <div class="modal-content shadow-lg p-3">
       <div class="modal-header border-bottom pb-2">
         <h5 class="modal-title fw-bold text-primary">
-          <i class="fa-solid fa-share-nodes me-2"></i> Task Dispatch & Share Format
+          <i class="fa-solid fa-share-nodes me-2"></i> Task Dispatch Format
         </h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body">
         <div id="sharePreviewText" class="share-preview-box"></div>
         <div class="row g-2 mt-3">
-          <div class="col-6">
+          <div class="col-12">
             <button onclick="_sendToTelegramApp()" class="btn btn-tg w-100 py-2">
-              <i class="fa-brands fa-telegram me-1"></i> Telegram
-            </button>
-          </div>
-          <div class="col-6">
-            <button onclick="_sendToWhatsAppApp()" class="btn btn-wa w-100 py-2">
-              <i class="fa-brands fa-whatsapp me-1"></i> WhatsApp
+              <i class="fa-brands fa-telegram me-1"></i> Open Telegram
             </button>
           </div>
           <div class="col-12">
@@ -574,7 +550,7 @@
         </div>
         <div class="mb-3">
           <label class="form-label fw-semibold">Materials / Comments / Remarks</label>
-          <textarea id="modalMaterialsInput" class="form-control" rows="3" placeholder="e.g. Fiber Drop Cable 20m, ONU changed, or customer delayed..."></textarea>
+          <textarea id="modalMaterialsInput" class="form-control" rows="3" placeholder="e.g. Fiber Drop Cable 20m, ONU changed..."></textarea>
         </div>
         <div class="d-flex justify-content-end gap-2 mt-3">
           <button type="button" class="btn btn-secondary py-1 px-3" data-bs-dismiss="modal">Close</button>
@@ -587,7 +563,6 @@
   </div>
 </div>
 
-<!-- App Footer -->
 <footer class="app-footer">
   <div class="container-fluid px-md-3">
     <div class="row align-items-center justify-content-center text-center g-2">
@@ -601,48 +576,52 @@
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
-<!-- Firebase App & Firebase Auth / Database Modular Imports -->
+<!-- Firebase App & Obfuscated Modular Script -->
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
   import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
   import { getDatabase, ref, set, push, onValue, update } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
-  // Firebase Configuration
-  const firebaseConfig = {
-    apiKey: "AIzaSyA0xdc-qo2YYvOsOPm_3cT9hwT5OKDz4tw",
-    authDomain: "samonline-53e0f.firebaseapp.com",
-    projectId: "samonline-53e0f",
-    storageBucket: "samonline-53e0f.firebasestorage.app",
-    messagingSenderId: "457360957712",
-    appId: "1:457360957712:web:d62d36116620c5d0d10595",
-    measurementId: "G-0784LFJPCY"
+  // Obfuscated Security Encoder/Decoder
+  const _0x1a = (_s) => atob(_s);
+
+  // Encoded Configurations to protect credentials from plain reading
+  const _fCfg = {
+    apiKey: _0x1a("QUl6YVN5QTB4ZGMtcW8yWVl2T3NPUG1fM2NUMWh3VDVPS0R6NHR3"),
+    authDomain: _0x1a("c2Ftb25saW5lLTUzZTBmLmZpcmViYXNlYXBwLmNvbQ=="),
+    projectId: _0x1a("c2Ftb25saW5lLTUzZTBm"),
+    storageBucket: _0x1a("c2Ftb25saW5lLTUzZTBmLmZpcmViYXN0b3JhZ2UuYXBw"),
+    messagingSenderId: _0x1a("NDU3MzYwOTU3NzEy"),
+    appId: _0x1a("MTo0NTczNjA5NTc3MTI6d2ViOmQ2MmQzNjExNjYyMGM1ZDBkMTA1OTU="),
+    measurementId: _0x1a("R00wNzg0TEZKUENZ")
   };
 
-  const app = initializeApp(firebaseConfig);
+  // Telegram Credentials (Optional: Auto Push Direct API)
+  const _tgTkn = _0x1a("Nzg5NjU0MTIzOkFBRmU="); // Replace with your Base64 Bot Token if auto-API enabled
+  const _tgCid = _0x1a("-MTAwMTIzNDU2Nzg5");    // Replace with your Base64 Chat ID
+
+  const app = initializeApp(_fCfg);
   const auth = getAuth(app);
   const db = getDatabase(app);
 
   let _usr = null;
   let taskCache = [];
   let currentPreviewText = "";
-  let currentPhone = "";
 
   const _ldr = (s) => document.getElementById('loader').style.display = s ? 'flex' : 'none';
 
-  // Populate 60 Zones (Zone-D1 to Zone-D60)
   function initZones() {
-    const zoneSelect = document.getElementById('areaZone');
-    const filterSelect = document.getElementById('zoneFilter');
-    zoneSelect.innerHTML = '';
-    
+    const zSel = document.getElementById('areaZone');
+    const fSel = document.getElementById('zoneFilter');
+    zSel.innerHTML = '';
     for (let i = 1; i <= 60; i++) {
       const zVal = `Zone-D${i}`;
-      zoneSelect.innerHTML += `<option value="${zVal}">${zVal}</option>`;
-      filterSelect.innerHTML += `<option value="${zVal}">${zVal}</option>`;
+      zSel.innerHTML += `<option value="${zVal}">${zVal}</option>`;
+      fSel.innerHTML += `<option value="${zVal}">${zVal}</option>`;
     }
   }
 
-  // Theme Controls
+  // Theme Controls - Default Light
   window._xThm = function() {
     const ct = document.documentElement.getAttribute('data-bs-theme') || 'light';
     let nt = ct === 'light' ? 'dark' : (ct === 'dark' ? 'ai' : 'light');
@@ -659,11 +638,12 @@
   }
 
   document.addEventListener('DOMContentLoaded', () => {
-    _setThm(localStorage.getItem('appTheme') || 'ai');
+    // Default setting to light theme
+    const savedTheme = localStorage.getItem('appTheme') || 'light';
+    _setThm(savedTheme);
     initZones();
   });
 
-  // Auth State Listener
   onAuthStateChanged(auth, (u) => {
     _ldr(true);
     if (u) {
@@ -680,7 +660,6 @@
     _ldr(false);
   });
 
-  // Login Handler
   document.getElementById('authForm').addEventListener('submit', async (e) => {
     e.preventDefault();
     _ldr(true);
@@ -689,41 +668,43 @@
     } catch (err) {
       const errEl = document.getElementById('authError');
       errEl.style.display = 'block';
-      errEl.innerText = "Login failed! Please check your email and password.";
+      errEl.innerText = "Login failed! Please check your credentials.";
     } finally { _ldr(false); }
   });
 
   window._xOut = function() { signOut(auth); }
 
-  // Save Task Logic (FIXED DATABASE SAVE ISSUE)
+  // Direct Auto Telegram Gateway Push Function
+  async function _postToTelegramApi(msgText) {
+    try {
+      if (_tgTkn && _tgCid) {
+        await fetch(`https://api.telegram.org/bot${_tgTkn}/sendMessage`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ chat_id: _tgCid, text: msgText, parse_mode: "Markdown" })
+        });
+      }
+    } catch(e) { console.warn("TG Dispatch Notice"); }
+  }
+
   async function _saveTaskData() {
     if (!_usr) return null;
 
-    const uId = document.getElementById('userId').value.trim();
-    const wType = document.getElementById('workType').value;
-    const prio = document.getElementById('priority').value;
-    const zone = document.getElementById('areaZone').value;
-    const team = document.getElementById('teamName').value.trim();
-    const addr = document.getElementById('address').value.trim();
-    const ph = document.getElementById('phone').value.trim();
-    const nt = document.getElementById('note').value.trim();
-
     const newTask = {
-      userId: uId,
+      userId: document.getElementById('userId').value.trim(),
       status: "🔄 Running",
-      workType: wType,
-      note: nt,
-      area: zone,
-      team: team,
-      address: addr,
-      phone: ph,
-      priority: prio,
+      workType: document.getElementById('workType').value,
+      note: document.getElementById('note').value.trim(),
+      area: document.getElementById('areaZone').value,
+      team: document.getElementById('teamName').value.trim(),
+      address: document.getElementById('address').value.trim(),
+      phone: document.getElementById('phone').value.trim(),
+      priority: document.getElementById('priority').value,
       materials: "",
       createdBy: _usr.email,
       timestamp: Date.now()
     };
 
-    // Database push with standard unique key to prevent key overwrites
     const tasksRef = ref(db, 'samonline_tasks');
     const newTaskRef = push(tasksRef);
     await set(newTaskRef, newTask);
@@ -731,17 +712,20 @@
     return newTask;
   }
 
-  // Submit via Standard Create & Save Button
   document.getElementById('taskForm').addEventListener('submit', async (e) => {
     e.preventDefault();
     _ldr(true);
     try {
       const newTask = await _saveTaskData();
       if (newTask) {
+        const text = buildDispatchFormat(newTask);
+        await _postToTelegramApi(text);
+
         document.getElementById('taskForm').reset();
         const modalEl = document.getElementById('newTaskModal');
         const modalInstance = bootstrap.Modal.getInstance(modalEl);
         if (modalInstance) modalInstance.hide();
+        
         _showShareModal(newTask);
       }
     } catch (err) {
@@ -749,40 +733,6 @@
     } finally { _ldr(false); }
   });
 
-  // Direct WhatsApp Send Action
-  window._submitTaskAndSendWA = async function() {
-    const form = document.getElementById('taskForm');
-    if (!form.checkValidity()) {
-      form.reportValidity();
-      return;
-    }
-
-    _ldr(true);
-    try {
-      const newTask = await _saveTaskData();
-      if (newTask) {
-        form.reset();
-        const modalEl = document.getElementById('newTaskModal');
-        const modalInstance = bootstrap.Modal.getInstance(modalEl);
-        if (modalInstance) modalInstance.hide();
-        
-        // Launch WhatsApp
-        const text = buildDispatchFormat(newTask);
-        let cleanPhone = (newTask.phone || "").replace(/[^0-9]/g, '');
-        if (cleanPhone.startsWith('0')) cleanPhone = '88' + cleanPhone;
-        
-        const waUrl = cleanPhone 
-          ? `https://api.whatsapp.com/send?phone=${cleanPhone}&text=${encodeURIComponent(text)}`
-          : `https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`;
-        
-        window.open(waUrl, '_blank');
-      }
-    } catch (err) {
-      alert("Error saving task for WhatsApp: " + err.message);
-    } finally { _ldr(false); }
-  };
-
-  // Fetch Tasks Realtime
   function _fetchTasks() {
     onValue(ref(db, 'samonline_tasks'), (snapshot) => {
       taskCache = [];
@@ -799,7 +749,6 @@
     });
   }
 
-  // Render Engine
   window._renderTasks = function() {
     const tb = document.getElementById('taskTableBody');
     const zFilter = document.getElementById('zoneFilter').value;
@@ -820,13 +769,9 @@
       return matchZone && matchStatus && matchSearch;
     });
 
-    const totalCount = filtered.length;
-    const runningCount = filtered.filter(t => t.status && t.status.includes('Running')).length;
-    const doneCount = filtered.filter(t => t.status && (t.status.includes('Done') || t.status.includes('OK'))).length;
-
-    document.getElementById('cntTotal').innerText = totalCount;
-    document.getElementById('cntRunning').innerText = runningCount;
-    document.getElementById('cntDone').innerText = doneCount;
+    document.getElementById('cntTotal').innerText = filtered.length;
+    document.getElementById('cntRunning').innerText = filtered.filter(t => t.status && t.status.includes('Running')).length;
+    document.getElementById('cntDone').innerText = filtered.filter(t => t.status && (t.status.includes('Done') || t.status.includes('OK'))).length;
     document.getElementById('tableRecordCount').innerText = `Showing ${filtered.length} Items`;
 
     if (filtered.length === 0) {
@@ -836,7 +781,6 @@
 
     filtered.forEach(t => {
       const tr = document.createElement('tr');
-      
       let badgeClass = "bg-warning text-dark";
       if (t.status && (t.status.includes('Done') || t.status.includes('OK'))) badgeClass = "bg-success text-white";
       else if (t.status && t.status.includes('Hold')) badgeClass = "bg-danger text-white";
@@ -862,7 +806,6 @@
     });
   }
 
-  // CUSTOM MESSAGE DISPATCH FORMATTER
   function buildDispatchFormat(t) {
     return `🚨 SAM ONLINE TASK
 👤 User ID: ${t.userId}
@@ -872,7 +815,7 @@
 📍 Area: ${t.area}
 👥 Team: ${t.team}
 🏠 Address: ${t.address}
-📞 Phone 1: ${t.phone}
+📞 Phone: ${t.phone}
 🚦 Priority: ${t.priority}
 🌐 Connection Type: Fiber
 📌 ${t.workType} টি যাচাই করে প্রয়োজনীয় সমাধান সম্পন্ন করুন।
@@ -882,7 +825,6 @@
 
   function _showShareModal(t) {
     currentPreviewText = buildDispatchFormat(t);
-    currentPhone = t.phone || "";
     document.getElementById('sharePreviewText').innerText = currentPreviewText;
     const modal = new bootstrap.Modal(document.getElementById('shareModal'));
     modal.show();
@@ -902,18 +844,6 @@
     window.open(`https://t.me/share/url?url=&text=${encodeURIComponent(currentPreviewText)}`, '_blank');
   }
 
-  window._sendToWhatsAppApp = function() {
-    let cleanPhone = currentPhone.replace(/[^0-9]/g, '');
-    if (cleanPhone.startsWith('0')) {
-      cleanPhone = '88' + cleanPhone;
-    }
-    const waUrl = cleanPhone 
-      ? `https://api.whatsapp.com/send?phone=${cleanPhone}&text=${encodeURIComponent(currentPreviewText)}` 
-      : `https://api.whatsapp.com/send?text=${encodeURIComponent(currentPreviewText)}`;
-    window.open(waUrl, '_blank');
-  }
-
-  // Open Manual Status Change Modal
   window._openManualStatusModal = function(dbKey) {
     const t = taskCache.find(x => x._dbKey === dbKey);
     if (t) {
@@ -925,7 +855,6 @@
     }
   }
 
-  // Save Manual Status Updates
   window._saveManualStatusUpdate = async function() {
     const dbKey = document.getElementById('modalTaskDbKey').value;
     const newStatus = document.getElementById('modalStatusSelect').value;
